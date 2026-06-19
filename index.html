@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Staff Rotation Schedule</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:#0F1623;color:#fff;min-height:100vh;display:flex;flex-direction:column}
+/* background subtle grid */
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(255,255,255,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none}
+header{padding:1.25rem 2rem;display:flex;align-items:center;gap:10px;border-bottom:1px solid rgba(255,255,255,.08);position:relative;z-index:1}
+.logo{width:36px;height:36px;background:#1A6FB5;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.1rem}
+.logo-text{font-size:.95rem;font-weight:600;color:#E2E8F0}
+.logo-sub{font-size:.72rem;color:#64748B;margin-top:1px}
+main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem;position:relative;z-index:1}
+.hero{text-align:center;margin-bottom:3rem;max-width:520px}
+.hero h1{font-size:2.2rem;font-weight:700;line-height:1.2;margin-bottom:.75rem;background:linear-gradient(135deg,#fff 0%,#93C5FD 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero p{font-size:.95rem;color:#94A3B8;line-height:1.6}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1rem;width:100%;max-width:580px}
+.card{border-radius:14px;padding:1.75rem 1.5rem;cursor:pointer;text-decoration:none;display:block;transition:transform .15s,box-shadow .15s;position:relative;overflow:hidden}
+.card:hover{transform:translateY(-3px)}
+.card-staff{background:#1A2744;border:1px solid rgba(59,130,246,.25)}
+.card-staff:hover{border-color:rgba(59,130,246,.5);box-shadow:0 8px 30px rgba(59,130,246,.15)}
+.card-admin{background:#1C1A2A;border:1px solid rgba(139,92,246,.25)}
+.card-admin:hover{border-color:rgba(139,92,246,.5);box-shadow:0 8px 30px rgba(139,92,246,.15)}
+.card-icon{width:46px;height:46px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;margin-bottom:1rem}
+.icon-staff{background:rgba(59,130,246,.15)}
+.icon-admin{background:rgba(139,92,246,.15)}
+.card h2{font-size:1.05rem;font-weight:600;margin-bottom:.4rem;color:#F1F5F9}
+.card p{font-size:.82rem;color:#94A3B8;line-height:1.5}
+.card-arrow{position:absolute;bottom:1.5rem;right:1.5rem;font-size:1.1rem;opacity:.4;transition:opacity .15s,transform .15s}
+.card:hover .card-arrow{opacity:.9;transform:translateX(3px)}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:.68rem;font-weight:600;margin-top:.75rem}
+.badge-view{background:rgba(34,197,94,.1);color:#4ADE80;border:1px solid rgba(34,197,94,.2)}
+.badge-lock{background:rgba(139,92,246,.1);color:#C4B5FD;border:1px solid rgba(139,92,246,.2)}
+.pills{display:flex;gap:6px;flex-wrap:wrap;margin-top:1.5rem;justify-content:center}
+.pill{padding:4px 12px;border-radius:20px;font-size:.72rem;color:#64748B;border:1px solid rgba(255,255,255,.07);background:rgba(255,255,255,.03)}
+footer{text-align:center;padding:1.25rem;font-size:.75rem;color:#334155;position:relative;z-index:1}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">🗓</div>
+  <div>
+    <div class="logo-text">Rotation Schedule</div>
+    <div class="logo-sub">KHBP · AYC · Mobile Lab · Outreach</div>
+  </div>
+</header>
+<main>
+  <div class="hero">
+    <h1>Staff Rotation Portal</h1>
+    <p>View the full team schedule, check your personal assignments, or manage the rotation as an admin.</p>
+    <div class="pills">
+      <span class="pill">Sun–Thu work week</span>
+      <span class="pill"></span>
+      <span class="pill">Max 6 days/week</span>
+      <span class="pill">29 Jun – Aug 2025</span>
+    </div>
+  </div>
+  <div class="cards">
+    <a href="staff.html" class="card card-staff">
+      <div class="card-icon icon-staff">👥</div>
+      <h2>Staff View</h2>
+      <p>See the full team schedule and your personal monthly calendar.</p>
+      <span class="badge badge-view">👁 View only</span>
+      <div class="card-arrow">→</div>
+    </a>
+    <a href="admin.html" class="card card-admin">
+      <div class="card-icon icon-admin">⚙️</div>
+      <h2>Admin Panel</h2>
+      <p>Manage names, assign locations, review the daily brief and weekly summary.</p>
+      <span class="badge badge-lock">🔐 Password protected</span>
+      <div class="card-arrow">→</div>
+    </a>
+  </div>
+</main>
+<footer>Rotation Schedule · Internal use only</footer>
+</body>
+</html>
