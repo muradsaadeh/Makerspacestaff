@@ -3,20 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>The Makerspace team schedule </title>
+<title>The Makerspace Team Schedule </title>
 <style>
 :root{
   --navy:#1C2333;--navy2:#2d3a55;--bg:#F5F6F8;--card:#fff;
   --border:#E0E2E8;--text:#1C2333;--muted:#6B7280;
-  --khbp-bg:#D6E8F7;--khbp-fg:#0D3F6E;
-  --aycm-bg:#D5F0E5;--aycm-fg:#084D37;
-  --aycn-bg:#E9E5FC;--aycn-fg:#31216B;
-  --mob-bg:#FDEECE;--mob-fg:#6B3E00;
-  --out-bg:#FDE0EB;--out-fg:#6B162F;
-  --off-bg:#F0F0EE;--off-fg:#888;
-  --fri-bg:#EDEDED;--fri-fg:#AAA;
-  --red-bg:#FFD7D7;--red-fg:#8B0000;
-  --grn-bg:#E8F5E9;--grn-fg:#1B5E20;
   --radius:8px;
 }
 *{box-sizing:border-box;margin:0;padding:0}
@@ -32,6 +23,7 @@ nav{background:var(--navy2);display:flex;overflow-x:auto}
 .nav-btn.active{color:#fff;border-bottom-color:#3A9EDC}
 .nav-btn:hover{color:#fff}
 .readonly-bar{background:#EFF6FF;border-bottom:1px solid #BFDBFE;padding:.5rem 1.5rem;font-size:.78rem;color:#1D4ED8;display:flex;align-items:center;gap:6px}
+.updated-bar{background:#F0FDF4;border-bottom:1px solid #BBF7D0;padding:.4rem 1.5rem;font-size:.75rem;color:#166534;display:flex;align-items:center;gap:6px}
 main{padding:1.25rem}
 .section{display:none}.section.active{display:block}
 .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:1.25rem;overflow:hidden}
@@ -43,7 +35,6 @@ th,td{padding:7px 9px;border:1px solid var(--border);white-space:nowrap}
 th{background:var(--navy);color:#fff;font-weight:500;text-align:center}
 th.name-hd{text-align:left}
 td.name-cell{font-weight:600;color:var(--navy);position:sticky;left:0;background:#fff;z-index:5;min-width:140px}
-.fri-cell{background:var(--fri-bg)!important;color:var(--fri-fg)!important;font-style:italic;font-size:.72rem;text-align:center}
 .chip{display:inline-block;padding:2px 8px;border-radius:20px;font-size:.73rem;font-weight:600}
 .emp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px;margin-bottom:1.25rem}
 .emp-card{border:2px solid var(--border);border-radius:var(--radius);padding:.75rem 1rem;cursor:pointer;transition:all .15s;background:#fff}
@@ -57,52 +48,45 @@ td.name-cell{font-weight:600;color:var(--navy);position:sticky;left:0;background
 .legend{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1rem}
 .leg{display:flex;align-items:center;gap:5px;font-size:.75rem;font-weight:600}
 .leg-dot{width:10px;height:10px;border-radius:3px}
-/* Calendar */
 .cal-wrap{border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:1.25rem}
-.cal-hdr{background:var(--navy);color:#fff;padding:.875rem 1.25rem;display:flex;align-items:center;justify-content:space-between}
+.cal-hdr{background:var(--navy);color:#fff;padding:.875rem 1.25rem}
 .cal-title{font-size:.95rem;font-weight:700}
 .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;background:var(--border)}
 .cal-dow{background:var(--navy2);color:#CBD5E0;text-align:center;font-size:.7rem;font-weight:600;padding:6px 2px}
-.cal-dow.fri{background:var(--fri-bg);color:var(--fri-fg)}
 .cal-day{background:#fff;min-height:72px;padding:5px;display:flex;flex-direction:column;gap:3px}
 .cal-day.empty{background:#FAFAFA}
 .cal-day.outrange{background:#F8F8F8;opacity:.45}
 .cal-day.is-today{background:#EFF6FF}
-.cal-day.is-fri{background:var(--fri-bg)}
-.cal-day.is-sat{background:#F5F5F5}
-.cal-num{font-size:.7rem;font-weight:700;color:var(--muted)}
+.cal-num{font-size:.7rem;font-weight:700;color:#6B7280}
 .cal-day.is-today .cal-num{color:var(--navy);background:#DBEAFE;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center}
 .cal-chip{font-size:.65rem;font-weight:700;padding:2px 5px;border-radius:4px;text-align:center;line-height:1.3}
-/* stats */
 .stat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px;margin-bottom:1.25rem}
 .stat{border-radius:var(--radius);padding:.75rem;text-align:center;border:1px solid transparent}
 .no-data{text-align:center;padding:3rem;color:var(--muted);font-size:.9rem}
-.refresh-btn{font-size:.78rem;padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:#fff;cursor:pointer;font-family:inherit}
-.refresh-btn:hover{background:var(--bg)}
 </style>
 </head>
 <body>
 <header>
   <div>
-    <h1>🗓 The Makerspace Staff Schedule</h1>
-    <p>All 7 days assignable · View only</p>
+    <h1>&#128197; Staff Schedule &#8212; Rotation Portal</h1>
+    <p>View only &#183; Data last updated by admin</p>
   </div>
   <div style="display:flex;align-items:center;gap:10px">
-    <span class="hbadge">👁 View only</span>
-    <a href="index.html" class="back-btn">← Portal</a>
+    <span class="hbadge">&#128065; View only</span>
+    <a href="index.html" class="back-btn">&#8592; Portal</a>
   </div>
 </header>
-<div class="readonly-bar">🔒 Read-only view. Contact your manager to request changes.</div>
+<div class="readonly-bar">&#128274; Read-only view. Contact your manager to request changes.</div>
+<div class="updated-bar">&#10003; Schedule loaded &#183; Period: 29 Jun &#8211; 1 Aug 2025</div>
 <nav>
-  <button class="nav-btn active" onclick="showTab('full',this)">📅 Full Schedule</button>
-  <button class="nav-btn" onclick="showTab('personal',this)">👤 My Schedule</button>
+  <button class="nav-btn active" onclick="showTab('full',this)">&#128197; Full Schedule</button>
+  <button class="nav-btn" onclick="showTab('personal',this)">&#128100; My Schedule</button>
 </nav>
 <main>
   <div id="tab-full" class="section active">
     <div class="period-bar">
       <label>Period:</label>
       <select id="full-psel" onchange="renderFull()"></select>
-      <button class="refresh-btn" onclick="refreshData()">🔄 Refresh</button>
     </div>
     <div class="legend" id="full-legend"></div>
     <div class="card"><div class="card-body" style="padding:0"><div class="tbl-wrap" id="full-tbl"></div></div></div>
@@ -118,6 +102,8 @@ td.name-cell{font-weight:600;color:var(--navy);position:sticky;left:0;background
 </main>
 
 <script>
+const BAKED_STATE = {"employees": ["Ala'a Janbak", "Mohammed Hinti", "Bashar Al-zubi", "Ghadeer AbuRashed", "Ahmad Shwayat", "Ahmad Abu Ghazaleh", "Momen Kamal", "Ahmad Abu Slayeh", "Ismail Qashoue", "Ahmad Fares", "Murad Saadeh"], "schedule": {"2025-06-29:0": "KHBP", "2025-06-30:0": "KHBP", "2025-07-01:0": "KHBP", "2025-06-29:1": "KHBP", "2025-06-30:1": "KHBP", "2025-07-01:1": "KHBP", "2025-07-02:1": "KHBP", "2025-07-02:0": "KHBP", "2025-07-05:0": "KHBP", "2025-07-05:1": "KHBP", "2025-06-29:3": "AYC Morning", "2025-06-30:3": "AYC Morning", "2025-07-01:3": "AYC Morning", "2025-07-02:3": "AYC Morning", "2025-07-05:3": "AYC Morning", "2025-06-29:4": "Mobile Lab", "2025-06-30:4": "Mobile Lab", "2025-07-01:4": "Mobile Lab", "2025-07-03:4": "Mobile Lab", "2025-07-05:4": "Mobile Lab", "2025-07-02:4": "Mobile Lab", "2025-06-29:5": "AYC Night", "2025-06-30:5": "AYC Night", "2025-07-01:5": "AYC Night", "2025-07-02:5": "Day Off", "2025-07-03:5": "AYC Night", "2025-07-05:5": "AYC Night", "2025-06-29:6": "Mobile Lab", "2025-06-30:6": "Mobile Lab", "2025-07-01:6": "Mobile Lab", "2025-07-02:6": "Mobile Lab", "2025-07-03:6": "Mobile Lab", "2025-06-29:7": "KHBP", "2025-06-30:7": "Outreach", "2025-07-01:7": "KHBP", "2025-07-02:7": "KHBP", "2025-07-03:7": "KHBP", "2025-06-29:8": "KHBP", "2025-06-30:8": "KHBP", "2025-07-01:8": "KHBP", "2025-07-02:8": "KHBP", "2025-07-03:8": "Outreach", "2025-06-29:9": "Outreach", "2025-06-30:9": "Outreach", "2025-07-01:9": "KHBP", "2025-07-02:9": "KHBP", "2025-07-03:9": "KHBP", "2025-06-29:10": "KHBP", "2025-06-30:10": "AYC Morning", "2025-07-01:10": "KHBP", "2025-07-02:10": "KHBP", "2025-07-03:10": "KHBP", "2025-07-03:2": "AYC Morning", "2025-07-02:2": "AYC Morning", "2025-07-01:2": "KHBP", "2025-06-30:2": "KHBP", "2025-06-29:2": "KHBP"}, "periods": [{"label": "29 Jun \u2013 1 Aug 2025", "start": "2025-06-29", "end": "2025-08-01"}]};
+
 const LOC_STYLE={
   "KHBP":        {bg:"#D6E8F7",fg:"#0D3F6E"},
   "AYC Morning": {bg:"#D5F0E5",fg:"#084D37"},
@@ -125,111 +111,94 @@ const LOC_STYLE={
   "Mobile Lab":  {bg:"#FDEECE",fg:"#6B3E00"},
   "Outreach":    {bg:"#FDE0EB",fg:"#6B162F"},
   "Day Off":     {bg:"#F0F0EE",fg:"#888"},
-  "Day Off":  {bg:"#EDEDED",fg:"#AAA"},
 };
 const DAY_ABBR=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 const MONTH_NAMES=["January","February","March","April","May","June","July","August","September","October","November","December"];
-let state=null,selEmp=0;
+let selEmp=0;
 
-function loadState(){
-  try{const r=localStorage.getItem('rotation_staff_v4');if(r)return JSON.parse(r);}catch(e){}
-  return null;
-}
-function refreshData(){state=loadState();if(state){syncSels();renderActive();}else{document.getElementById('full-tbl').innerHTML='<div class="no-data">No schedule yet. Ask your admin to save the schedule.</div>';}}
+// Use baked data — no localStorage dependency
+const state = BAKED_STATE;
 
 function fmtDate(d){return d.toISOString().slice(0,10)}
-function parseDate(s){return new Date(s+'T00:00:00')}
-function isFri(s){return parseDate(s).getDay()===5}
+function parseDate(s){return new Date(s+"T00:00:00")}
 function isSun(s){return parseDate(s).getDay()===0}
-function isSat(s){return parseDate(s).getDay()===6}
 function dowName(s){return DAY_ABBR[parseDate(s).getDay()]}
 function dayNum(s){return parseInt(s.slice(8))}
-function dateRange(s,e){const a=[];let d=new Date(s+'T00:00:00');const end=new Date(e+'T00:00:00');while(d<=end){a.push(fmtDate(d));d=new Date(d.getTime()+86400000);}return a;}
+function dateRange(s,e){const a=[];let d=new Date(s+"T00:00:00");const end=new Date(e+"T00:00:00");while(d<=end){a.push(fmtDate(d));d=new Date(d.getTime()+86400000);}return a;}
 function toWeeks(dates){const w=[];let wk=[];for(const d of dates){if(isSun(d)&&wk.length){w.push(wk);wk=[];}wk.push(d);}if(wk.length)w.push(wk);return w;}
-function getAssign(date,ei){if(!state)return isFri(date)?'Day Off':'Day Off';return state.schedule[`${date}:${ei}`]||(isFri(date)?'Day Off':'Day Off');}
-function initials(n){return n.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();}
+function getAssign(date,ei){return state.schedule[date+":"+ei]||"Day Off";}
+function initials(n){return n.split(" ").map(w=>w[0]).join("").slice(0,2).toUpperCase();}
 
 function showTab(name,btn){
-  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
-  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
-  document.getElementById('tab-'+name).classList.add('active');
-  if(btn)btn.classList.add('active');
-  if(name==='full'){syncSels();renderFull();}
-  if(name==='personal'){syncSels();renderEmpPicker();renderPersonal();}
+  document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
+  document.querySelectorAll(".nav-btn").forEach(b=>b.classList.remove("active"));
+  document.getElementById("tab-"+name).classList.add("active");
+  if(btn)btn.classList.add("active");
+  if(name==="full"){syncSels();renderFull();}
+  if(name==="personal"){syncSels();renderEmpPicker();renderPersonal();}
 }
+
 function syncSels(){
-  if(!state)return;
-  ['full-psel','pers-psel'].forEach(id=>{
+  ["full-psel","pers-psel"].forEach(id=>{
     const s=document.getElementById(id);if(!s)return;
-    const v=s.value;s.innerHTML=state.periods.map((p,i)=>`<option value="${i}">${p.label}</option>`).join('');
+    const v=s.value;
+    s.innerHTML=state.periods.map((p,i)=>`<option value="${i}">${p.label}</option>`).join("");
     if(v&&v<state.periods.length)s.value=v;
   });
 }
-function curPeriod(id){if(!state)return{start:'2025-06-29',end:'2025-08-01'};const i=parseInt(document.getElementById(id)?.value||0);return state.periods[i]||state.periods[0];}
+function curPeriod(id){const i=parseInt(document.getElementById(id)?.value||0);return state.periods[i]||state.periods[0];}
 
-function renderActive(){
-  const active=document.querySelector('.section.active')?.id;
-  if(active==='tab-full'){syncSels();renderFull();}
-  if(active==='tab-personal'){syncSels();renderEmpPicker();renderPersonal();}
-}
-
-// Full schedule
 function renderFull(){
-  if(!state){document.getElementById('full-tbl').innerHTML='<div class="no-data">No schedule available. Ask your admin to save it first.</div>';return;}
-  const p=curPeriod('full-psel');
+  const p=curPeriod("full-psel");
   const dates=dateRange(p.start,p.end);
   const weeks=toWeeks(dates);
   const N=state.employees.length;
-  document.getElementById('full-legend').innerHTML=Object.entries(LOC_STYLE).filter(([l])=>l!=='Day Off').map(([loc,{bg,fg}])=>
-    `<div class="leg"><div class="leg-dot" style="background:${bg};border:1px solid ${fg}30"></div>${loc}</div>`).join('');
-  let hdr='<tr><th class="name-hd" rowspan="2" style="position:sticky;left:0;min-width:140px">Employee</th>';
-  weeks.forEach((wk,wi)=>hdr+=`<th colspan="${wk.length}" style="background:#2d3a55">W${wi+1} · ${parseDate(wk[0]).toLocaleDateString('en-GB',{day:'numeric',month:'short'})}</th>`);
-  hdr+='</tr><tr>';
+  document.getElementById("full-legend").innerHTML=
+    Object.entries(LOC_STYLE).map(([loc,{bg,fg}])=>
+      `<div class="leg"><div class="leg-dot" style="background:${bg};border:1px solid ${fg}30"></div>${loc}</div>`
+    ).join("");
+  let hdr=`<tr><th class="name-hd" rowspan="2" style="position:sticky;left:0;min-width:140px">Employee</th>`;
+  weeks.forEach((wk,wi)=>hdr+=`<th colspan="${wk.length}" style="background:#2d3a55">W${wi+1} &middot; ${parseDate(wk[0]).toLocaleDateString("en-GB",{day:"numeric",month:"short"})}</th>`);
+  hdr+="</tr><tr>";
   weeks.forEach(wk=>wk.forEach(d=>{
-    const fri=isFri(d);
     hdr+=`<th style="background:var(--navy);color:#fff;font-size:.7rem;min-width:50px">${dayNum(d)}<br>${dowName(d)}</th>`;
   }));
-  hdr+='</tr>';
-  let tbody='';
+  hdr+="</tr>";
+  let tbody="";
   for(let ei=0;ei<N;ei++){
     tbody+=`<tr><td class="name-cell">${state.employees[ei]}</td>`;
     weeks.forEach(wk=>wk.forEach(d=>{
-      
       const a=getAssign(d,ei);const s=LOC_STYLE[a]||LOC_STYLE["Day Off"];
-      tbody+=`<td style="text-align:center;background:${s.bg}"><span class="chip" style="background:${s.bg};color:${s.fg}">${a==='Day Off'?'Off':a.replace(' Morning',' AM').replace(' Night',' PM').replace('Mobile Lab','Mob.')}</span></td>`;
+      tbody+=`<td style="text-align:center;background:${s.bg}"><span class="chip" style="background:${s.bg};color:${s.fg}">${a==="Day Off"?"Off":a.replace(" Morning"," AM").replace(" Night"," PM").replace("Mobile Lab","Mob.")}</span></td>`;
     }));
-    tbody+='</tr>';
+    tbody+="</tr>";
   }
-  document.getElementById('full-tbl').innerHTML=`<table><thead>${hdr}</thead><tbody>${tbody}</tbody></table>`;
+  document.getElementById("full-tbl").innerHTML=`<table><thead>${hdr}</thead><tbody>${tbody}</tbody></table>`;
 }
 
-// Emp picker
 function renderEmpPicker(){
-  if(!state){document.getElementById('emp-picker').innerHTML='';return;}
-  document.getElementById('emp-picker').innerHTML=state.employees.map((n,i)=>`
-    <div class="emp-card ${selEmp===i?'active':''}" onclick="selEmpFn(${i})">
+  document.getElementById("emp-picker").innerHTML=state.employees.map((n,i)=>`
+    <div class="emp-card ${selEmp===i?"active":""}" onclick="selEmpFn(${i})">
       <div class="emp-init">${initials(n)}</div>
       <div class="emp-label">${n}</div>
-    </div>`).join('');
+    </div>`).join("");
 }
 function selEmpFn(i){selEmp=i;renderEmpPicker();renderPersonal();}
 
-// Personal schedule
 function renderPersonal(){
-  if(!state){document.getElementById('personal-content').innerHTML='<div class="no-data">No schedule data yet.</div>';return;}
   const emp=state.employees[selEmp];
-  const p=curPeriod('pers-psel');
+  const p=curPeriod("pers-psel");
   const dates=dateRange(p.start,p.end);
   const today=fmtDate(new Date());
 
-  const workDays=dates.filter(d=>!isFri(d)&&getAssign(d,selEmp)!=='Day Off').length;
+  const workDays=dates.filter(d=>getAssign(d,selEmp)!=="Day Off").length;
   const byLoc={};
-  dates.filter(d=>!isFri(d)).forEach(d=>{const a=getAssign(d,selEmp);if(a!=='Day Off')byLoc[a]=(byLoc[a]||0)+1;});
+  dates.forEach(d=>{const a=getAssign(d,selEmp);if(a!=="Day Off")byLoc[a]=(byLoc[a]||0)+1;});
 
   let html=`<div style="display:flex;align-items:center;gap:12px;margin-bottom:1.25rem">
     <div style="width:46px;height:46px;border-radius:50%;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;flex-shrink:0">${initials(emp)}</div>
     <div><div style="font-size:1.1rem;font-weight:700;color:var(--navy)">${emp}</div>
-    <div style="font-size:.8rem;color:var(--muted)">${parseDate(p.start).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})} – ${parseDate(p.end).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}</div></div>
+    <div style="font-size:.8rem;color:var(--muted)">${parseDate(p.start).toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric"})} &ndash; ${parseDate(p.end).toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric"})}</div></div>
   </div>
   <div class="stat-grid">
     <div class="stat" style="background:var(--navy);color:#fff">
@@ -239,10 +208,10 @@ function renderPersonal(){
     ${Object.entries(byLoc).map(([loc,cnt])=>{const s=LOC_STYLE[loc]||LOC_STYLE["Day Off"];
       return `<div class="stat" style="background:${s.bg};color:${s.fg};border-color:${s.fg}20">
         <div style="font-size:1.4rem;font-weight:700">${cnt}</div>
-        <div style="font-size:.65rem">${loc}</div></div>`;}).join('')}
+        <div style="font-size:.65rem">${loc}</div></div>`;}).join("")}
   </div>`;
 
-  // Calendar — one per month in range
+  // Calendar
   const startD=parseDate(p.start);const endD=parseDate(p.end);
   const months=[];
   let cur=new Date(startD.getFullYear(),startD.getMonth(),1);
@@ -254,55 +223,45 @@ function renderPersonal(){
     const dim=new Date(y,m+1,0).getDate();
     html+=`<div class="cal-wrap"><div class="cal-hdr"><span class="cal-title">${MONTH_NAMES[m]} ${y}</span></div>
       <div class="cal-grid">
-        ${DAY_ABBR.map(d=>`<div class="cal-dow ${d==='Fri'?'fri':''}">${d}</div>`).join('')}`;
+        ${DAY_ABBR.map(d=>`<div class="cal-dow">${d}</div>`).join("")}`;
     for(let i=0;i<firstDow;i++)html+=`<div class="cal-day empty"></div>`;
     for(let day=1;day<=dim;day++){
-      const ds=`${y}-${String(m+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
-      const dow=new Date(y,m,day).getDay();
-      const fri=dow===5,sat=dow===6;
+      const ds=`${y}-${String(m+1).padStart(2,"0")}-${String(day).padStart(2,"0")}`;
       const inR=ds>=p.start&&ds<=p.end;
       const isTod=ds===today;
-      let cls='cal-day';
-      if(!inR)cls+=' outrange';
-      if(isTod)cls+=' is-today';
-      if(fri)cls+=' is-fri';
-      if(sat)cls+=' is-sat';
-      let chip='';
-      if(inR&&!sat){
-        if(fri){chip=`<div class="cal-chip" style="background:var(--fri-bg);color:var(--fri-fg)">Fri Off</div>`;}
-        else{
-          const a=getAssign(ds,selEmp);const s=LOC_STYLE[a]||LOC_STYLE["Day Off"];
-          if(a!=='Day Off')chip=`<div class="cal-chip" style="background:${s.bg};color:${s.fg}">${a.replace(' Morning',' AM').replace(' Night',' PM')}</div>`;
-        }
+      let cls="cal-day";
+      if(!inR)cls+=" outrange";
+      if(isTod)cls+=" is-today";
+      let chip="";
+      if(inR){
+        const a=getAssign(ds,selEmp);const s=LOC_STYLE[a]||LOC_STYLE["Day Off"];
+        if(a!=="Day Off")chip=`<div class="cal-chip" style="background:${s.bg};color:${s.fg}">${a.replace(" Morning"," AM").replace(" Night"," PM")}</div>`;
       }
-      if(inR&&sat)chip=`<div class="cal-chip" style="background:var(--fri-bg);color:var(--fri-fg)">Sat</div>`;
       html+=`<div class="${cls}"><div class="cal-num">${day}</div>${chip}</div>`;
     }
     const trail=(7-(firstDow+dim)%7)%7;
     for(let i=0;i<trail;i++)html+=`<div class="cal-day empty"></div>`;
-    html+='</div></div>';
+    html+="</div></div>";
   });
 
-  // List
+  // Day-by-day list
   html+=`<div class="card"><div class="card-head"><h2>Day-by-day</h2></div>
     <div style="padding:0"><table><thead><tr><th>Date</th><th>Day</th><th>Assignment</th></tr></thead><tbody>
-    ${dates.filter(d=>!isFri(d)).map(d=>{
+    ${dates.map(d=>{
       const a=getAssign(d,selEmp);const s=LOC_STYLE[a]||LOC_STYLE["Day Off"];
-      return `<tr><td style="font-weight:500">${parseDate(d).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}</td>
+      return `<tr><td style="font-weight:500">${parseDate(d).toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric"})}</td>
         <td style="color:var(--muted)">${dowName(d)}</td>
         <td><span class="chip" style="background:${s.bg};color:${s.fg}">${a}</span></td></tr>`;
-    }).join('')}
+    }).join("")}
     </tbody></table></div></div>`;
 
-  document.getElementById('personal-content').innerHTML=html;
+  document.getElementById("personal-content").innerHTML=html;
 }
 
-// Auto-refresh every 5s
-setInterval(()=>{const fresh=loadState();if(fresh&&JSON.stringify(fresh)!==JSON.stringify(state)){state=fresh;renderActive();}},5000);
-
-state=loadState();
-if(state){syncSels();renderFull();}
-else document.getElementById('full-tbl').innerHTML='<div class="no-data">No schedule yet. Ask your admin to save it first.</div>';
+// Init
+syncSels();
+renderFull();
+renderEmpPicker();
 </script>
 </body>
 </html>
