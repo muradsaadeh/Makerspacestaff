@@ -3,12 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>The Makerspace Team Schedule </title>
+<title>Staff Schedule — Rotation Portal</title>
 <style>
 :root{
   --navy:#1C2333;--navy2:#2d3a55;--bg:#F5F6F8;--card:#fff;
-  --border:#E0E2E8;--text:#1C2333;--muted:#6B7280;
-  --radius:8px;
+  --border:#E0E2E8;--text:#1C2333;--muted:#6B7280;--radius:8px;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
@@ -22,12 +21,14 @@ nav{background:var(--navy2);display:flex;overflow-x:auto}
 .nav-btn{padding:.65rem 1.25rem;color:#CBD5E0;font-size:.85rem;cursor:pointer;border:none;background:transparent;white-space:nowrap;border-bottom:3px solid transparent;transition:all .15s;font-family:inherit}
 .nav-btn.active{color:#fff;border-bottom-color:#3A9EDC}
 .nav-btn:hover{color:#fff}
-.readonly-bar{background:#EFF6FF;border-bottom:1px solid #BFDBFE;padding:.5rem 1.5rem;font-size:.78rem;color:#1D4ED8;display:flex;align-items:center;gap:6px}
-.updated-bar{background:#F0FDF4;border-bottom:1px solid #BBF7D0;padding:.4rem 1.5rem;font-size:.75rem;color:#166534;display:flex;align-items:center;gap:6px}
+.info-bar{padding:.5rem 1.5rem;font-size:.78rem;display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--border)}
+.info-bar.loading{background:#FEF9EE;color:#92400E}
+.info-bar.live{background:#F0FDF4;color:#166534}
+.info-bar.err{background:#FFF5F5;color:#991B1B}
 main{padding:1.25rem}
 .section{display:none}.section.active{display:block}
 .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:1.25rem;overflow:hidden}
-.card-head{padding:.875rem 1.25rem;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border)}
+.card-head{padding:.875rem 1.25rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
 .card-head h2{font-size:.95rem;font-weight:600}
 .tbl-wrap{overflow-x:auto}
 table{border-collapse:collapse;width:100%;font-size:.8rem}
@@ -63,21 +64,22 @@ td.name-cell{font-weight:600;color:var(--navy);position:sticky;left:0;background
 .stat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px;margin-bottom:1.25rem}
 .stat{border-radius:var(--radius);padding:.75rem;text-align:center;border:1px solid transparent}
 .no-data{text-align:center;padding:3rem;color:var(--muted);font-size:.9rem}
+.live-dot{width:7px;height:7px;border-radius:50%;background:#4ADE80;display:inline-block;margin-right:4px;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
 </style>
 </head>
 <body>
 <header>
   <div>
-    <h1>&#128197; The Makerspace Staff Schedule </h1>
-    <p>View only &#183; Data last updated by admin</p>
+    <h1>&#128197; Staff Schedule &mdash; Rotation Portal</h1>
+    <p><span class="live-dot"></span>Live &middot; Updates automatically &middot; View only</p>
   </div>
   <div style="display:flex;align-items:center;gap:10px">
     <span class="hbadge">&#128065; View only</span>
     <a href="index.html" class="back-btn">&#8592; Portal</a>
   </div>
 </header>
-<div class="readonly-bar">&#128274; Read-only view. Contact your manager to request changes.</div>
-<div class="updated-bar">&#10003; Schedule loaded &#183; Period: 29 Jun &#8211; 1 Aug 2025</div>
+<div class="info-bar loading" id="info-bar">&#9203; Connecting to live schedule...</div>
 <nav>
   <button class="nav-btn active" onclick="showTab('full',this)">&#128197; Full Schedule</button>
   <button class="nav-btn" onclick="showTab('personal',this)">&#128100; My Schedule</button>
@@ -89,7 +91,7 @@ td.name-cell{font-weight:600;color:var(--navy);position:sticky;left:0;background
       <select id="full-psel" onchange="renderFull()"></select>
     </div>
     <div class="legend" id="full-legend"></div>
-    <div class="card"><div class="card-body" style="padding:0"><div class="tbl-wrap" id="full-tbl"></div></div></div>
+    <div class="card"><div class="card-body" style="padding:0"><div class="tbl-wrap" id="full-tbl"><div class="no-data">Connecting...</div></div></div></div>
   </div>
   <div id="tab-personal" class="section">
     <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:1rem">
@@ -101,8 +103,23 @@ td.name-cell{font-weight:600;color:var(--navy);position:sticky;left:0;background
   </div>
 </main>
 
-<script>
-const BAKED_STATE = {"employees": ["Ala'a Janbak", "Mohammed Hinti", "Bashar Al-zubi", "Ghadeer AbuRashed", "Ahmad Shwayat", "Ahmad Abu Ghazaleh", "Momen Kamal", "Ahmad Abu Slayeh", "Ismail Qashoue", "Ahmad Fares", "Murad Saadeh"], "schedule": {"2025-06-29:0": "KHBP", "2025-06-30:0": "KHBP", "2025-07-01:0": "KHBP", "2025-06-29:1": "KHBP", "2025-06-30:1": "KHBP", "2025-07-01:1": "KHBP", "2025-07-02:1": "KHBP", "2025-07-02:0": "KHBP", "2025-07-05:0": "KHBP", "2025-07-05:1": "KHBP", "2025-06-29:3": "AYC Morning", "2025-06-30:3": "AYC Morning", "2025-07-01:3": "AYC Morning", "2025-07-02:3": "AYC Morning", "2025-07-05:3": "AYC Morning", "2025-06-29:4": "Mobile Lab", "2025-06-30:4": "Mobile Lab", "2025-07-01:4": "Mobile Lab", "2025-07-03:4": "Mobile Lab", "2025-07-05:4": "Mobile Lab", "2025-07-02:4": "Mobile Lab", "2025-06-29:5": "AYC Night", "2025-06-30:5": "AYC Night", "2025-07-01:5": "AYC Night", "2025-07-02:5": "Day Off", "2025-07-03:5": "AYC Night", "2025-07-05:5": "AYC Night", "2025-06-29:6": "Mobile Lab", "2025-06-30:6": "Mobile Lab", "2025-07-01:6": "Mobile Lab", "2025-07-02:6": "Mobile Lab", "2025-07-03:6": "Mobile Lab", "2025-06-29:7": "KHBP", "2025-06-30:7": "Outreach", "2025-07-01:7": "KHBP", "2025-07-02:7": "KHBP", "2025-07-03:7": "KHBP", "2025-06-29:8": "KHBP", "2025-06-30:8": "KHBP", "2025-07-01:8": "KHBP", "2025-07-02:8": "KHBP", "2025-07-03:8": "Outreach", "2025-06-29:9": "Outreach", "2025-06-30:9": "Outreach", "2025-07-01:9": "KHBP", "2025-07-02:9": "KHBP", "2025-07-03:9": "KHBP", "2025-06-29:10": "KHBP", "2025-06-30:10": "AYC Morning", "2025-07-01:10": "KHBP", "2025-07-02:10": "KHBP", "2025-07-03:10": "KHBP", "2025-07-03:2": "AYC Morning", "2025-07-02:2": "AYC Morning", "2025-07-01:2": "KHBP", "2025-06-30:2": "KHBP", "2025-06-29:2": "KHBP"}, "periods": [{"label": "29 Jun \u2013 1 Aug 2025", "start": "2025-06-29", "end": "2025-08-01"}]};
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
+import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyB9MstqwrUM1b7SoENXq9wMbe_j10lWkiw",
+  authDomain: "the-makerspace-staff.firebaseapp.com",
+  databaseURL: "https://the-makerspace-staff-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "the-makerspace-staff",
+  storageBucket: "the-makerspace-staff.firebasestorage.app",
+  messagingSenderId: "1012535086057",
+  appId: "1:1012535086057:web:619438ffe3dc3c3dd55978"
+};
+
+const fbApp = initializeApp(firebaseConfig);
+const db = getDatabase(fbApp);
+const schedRef = ref(db, 'rotation');
 
 const LOC_STYLE={
   "KHBP":        {bg:"#D6E8F7",fg:"#0D3F6E"},
@@ -114,91 +131,116 @@ const LOC_STYLE={
 };
 const DAY_ABBR=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 const MONTH_NAMES=["January","February","March","April","May","June","July","August","September","October","November","December"];
-let selEmp=0;
+let state=null; let selEmp=0;
 
-// Use baked data — no localStorage dependency
-const state = BAKED_STATE;
+function setInfoBar(type,msg){
+  const b=document.getElementById('info-bar');
+  b.className='info-bar '+type; b.innerHTML=msg;
+}
+
+onValue(schedRef,(snapshot)=>{
+  const data=snapshot.val();
+  if(data){
+    state=data;
+    if(!state.periods)state.periods=[{label:"29 Jun – 1 Aug 2025",start:"2025-06-29",end:"2025-08-01"}];
+    setInfoBar('live','<span class="live-dot"></span> Live schedule &mdash; last updated by admin');
+    syncSels();
+    renderActive();
+  } else {
+    setInfoBar('loading','&#9203; No schedule published yet. Ask your admin to save.');
+  }
+},(err)=>{
+  setInfoBar('err','&#9888; Connection error. Please refresh.');
+});
 
 function fmtDate(d){return d.toISOString().slice(0,10)}
-function parseDate(s){return new Date(s+"T00:00:00")}
+function parseDate(s){return new Date(s+'T00:00:00')}
 function isSun(s){return parseDate(s).getDay()===0}
 function dowName(s){return DAY_ABBR[parseDate(s).getDay()]}
 function dayNum(s){return parseInt(s.slice(8))}
-function dateRange(s,e){const a=[];let d=new Date(s+"T00:00:00");const end=new Date(e+"T00:00:00");while(d<=end){a.push(fmtDate(d));d=new Date(d.getTime()+86400000);}return a;}
+function dateRange(s,e){const a=[];let d=new Date(s+'T00:00:00');const end=new Date(e+'T00:00:00');while(d<=end){a.push(fmtDate(d));d=new Date(d.getTime()+86400000);}return a;}
 function toWeeks(dates){const w=[];let wk=[];for(const d of dates){if(isSun(d)&&wk.length){w.push(wk);wk=[];}wk.push(d);}if(wk.length)w.push(wk);return w;}
-function getAssign(date,ei){return state.schedule[date+":"+ei]||"Day Off";}
-function initials(n){return n.split(" ").map(w=>w[0]).join("").slice(0,2).toUpperCase();}
+function getAssign(date,ei){if(!state)return 'Day Off';return state.schedule[`${date}:${ei}`]||'Day Off';}
+function initials(n){return n.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();}
 
-function showTab(name,btn){
-  document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
-  document.querySelectorAll(".nav-btn").forEach(b=>b.classList.remove("active"));
-  document.getElementById("tab-"+name).classList.add("active");
-  if(btn)btn.classList.add("active");
-  if(name==="full"){syncSels();renderFull();}
-  if(name==="personal"){syncSels();renderEmpPicker();renderPersonal();}
-}
+window.showTab = function(name,btn){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  if(btn)btn.classList.add('active');
+  if(name==='full'){syncSels();renderFull();}
+  if(name==='personal'){syncSels();renderEmpPicker();renderPersonal();}
+};
 
 function syncSels(){
-  ["full-psel","pers-psel"].forEach(id=>{
+  if(!state)return;
+  ['full-psel','pers-psel'].forEach(id=>{
     const s=document.getElementById(id);if(!s)return;
-    const v=s.value;
-    s.innerHTML=state.periods.map((p,i)=>`<option value="${i}">${p.label}</option>`).join("");
+    const v=s.value;s.innerHTML=state.periods.map((p,i)=>`<option value="${i}">${p.label}</option>`).join('');
     if(v&&v<state.periods.length)s.value=v;
   });
 }
-function curPeriod(id){const i=parseInt(document.getElementById(id)?.value||0);return state.periods[i]||state.periods[0];}
+function curPeriod(id){if(!state)return{start:'2025-06-29',end:'2025-08-01'};const i=parseInt(document.getElementById(id)?.value||0);return state.periods[i]||state.periods[0];}
+
+function renderActive(){
+  const active=document.querySelector('.section.active')?.id;
+  if(active==='tab-full'){syncSels();renderFull();}
+  if(active==='tab-personal'){syncSels();renderEmpPicker();renderPersonal();}
+}
 
 function renderFull(){
-  const p=curPeriod("full-psel");
+  if(!state){document.getElementById('full-tbl').innerHTML='<div class="no-data">Connecting to live schedule...</div>';return;}
+  const p=curPeriod('full-psel');
   const dates=dateRange(p.start,p.end);
   const weeks=toWeeks(dates);
   const N=state.employees.length;
-  document.getElementById("full-legend").innerHTML=
+  document.getElementById('full-legend').innerHTML=
     Object.entries(LOC_STYLE).map(([loc,{bg,fg}])=>
-      `<div class="leg"><div class="leg-dot" style="background:${bg};border:1px solid ${fg}30"></div>${loc}</div>`
-    ).join("");
+      `<div class="leg"><div class="leg-dot" style="background:${bg};border:1px solid ${fg}30"></div>${loc}</div>`).join('');
   let hdr=`<tr><th class="name-hd" rowspan="2" style="position:sticky;left:0;min-width:140px">Employee</th>`;
-  weeks.forEach((wk,wi)=>hdr+=`<th colspan="${wk.length}" style="background:#2d3a55">W${wi+1} &middot; ${parseDate(wk[0]).toLocaleDateString("en-GB",{day:"numeric",month:"short"})}</th>`);
-  hdr+="</tr><tr>";
+  weeks.forEach((wk,wi)=>hdr+=`<th colspan="${wk.length}" style="background:#2d3a55">W${wi+1} &middot; ${parseDate(wk[0]).toLocaleDateString('en-GB',{day:'numeric',month:'short'})}</th>`);
+  hdr+='</tr><tr>';
   weeks.forEach(wk=>wk.forEach(d=>{
     hdr+=`<th style="background:var(--navy);color:#fff;font-size:.7rem;min-width:50px">${dayNum(d)}<br>${dowName(d)}</th>`;
   }));
-  hdr+="</tr>";
-  let tbody="";
+  hdr+='</tr>';
+  let tbody='';
   for(let ei=0;ei<N;ei++){
     tbody+=`<tr><td class="name-cell">${state.employees[ei]}</td>`;
     weeks.forEach(wk=>wk.forEach(d=>{
       const a=getAssign(d,ei);const s=LOC_STYLE[a]||LOC_STYLE["Day Off"];
-      tbody+=`<td style="text-align:center;background:${s.bg}"><span class="chip" style="background:${s.bg};color:${s.fg}">${a==="Day Off"?"Off":a.replace(" Morning"," AM").replace(" Night"," PM").replace("Mobile Lab","Mob.")}</span></td>`;
+      tbody+=`<td style="text-align:center;background:${s.bg}"><span class="chip" style="background:${s.bg};color:${s.fg}">${a==='Day Off'?'Off':a.replace(' Morning',' AM').replace(' Night',' PM').replace('Mobile Lab','Mob.')}</span></td>`;
     }));
-    tbody+="</tr>";
+    tbody+='</tr>';
   }
-  document.getElementById("full-tbl").innerHTML=`<table><thead>${hdr}</thead><tbody>${tbody}</tbody></table>`;
+  document.getElementById('full-tbl').innerHTML=`<table><thead>${hdr}</thead><tbody>${tbody}</tbody></table>`;
 }
 
 function renderEmpPicker(){
-  document.getElementById("emp-picker").innerHTML=state.employees.map((n,i)=>`
-    <div class="emp-card ${selEmp===i?"active":""}" onclick="selEmpFn(${i})">
+  if(!state){document.getElementById('emp-picker').innerHTML='';return;}
+  document.getElementById('emp-picker').innerHTML=state.employees.map((n,i)=>`
+    <div class="emp-card ${selEmp===i?'active':''}" onclick="selEmpFn(${i})">
       <div class="emp-init">${initials(n)}</div>
       <div class="emp-label">${n}</div>
-    </div>`).join("");
+    </div>`).join('');
 }
-function selEmpFn(i){selEmp=i;renderEmpPicker();renderPersonal();}
+window.selEmpFn = function(i){selEmp=i;renderEmpPicker();renderPersonal();};
 
 function renderPersonal(){
+  if(!state){document.getElementById('personal-content').innerHTML='<div class="no-data">Loading...</div>';return;}
   const emp=state.employees[selEmp];
-  const p=curPeriod("pers-psel");
+  const p=curPeriod('pers-psel');
   const dates=dateRange(p.start,p.end);
   const today=fmtDate(new Date());
 
-  const workDays=dates.filter(d=>getAssign(d,selEmp)!=="Day Off").length;
+  const workDays=dates.filter(d=>getAssign(d,selEmp)!=='Day Off').length;
   const byLoc={};
-  dates.forEach(d=>{const a=getAssign(d,selEmp);if(a!=="Day Off")byLoc[a]=(byLoc[a]||0)+1;});
+  dates.forEach(d=>{const a=getAssign(d,selEmp);if(a!=='Day Off')byLoc[a]=(byLoc[a]||0)+1;});
 
   let html=`<div style="display:flex;align-items:center;gap:12px;margin-bottom:1.25rem">
     <div style="width:46px;height:46px;border-radius:50%;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;flex-shrink:0">${initials(emp)}</div>
     <div><div style="font-size:1.1rem;font-weight:700;color:var(--navy)">${emp}</div>
-    <div style="font-size:.8rem;color:var(--muted)">${parseDate(p.start).toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric"})} &ndash; ${parseDate(p.end).toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric"})}</div></div>
+    <div style="font-size:.8rem;color:var(--muted)">${parseDate(p.start).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})} &ndash; ${parseDate(p.end).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}</div></div>
   </div>
   <div class="stat-grid">
     <div class="stat" style="background:var(--navy);color:#fff">
@@ -208,10 +250,9 @@ function renderPersonal(){
     ${Object.entries(byLoc).map(([loc,cnt])=>{const s=LOC_STYLE[loc]||LOC_STYLE["Day Off"];
       return `<div class="stat" style="background:${s.bg};color:${s.fg};border-color:${s.fg}20">
         <div style="font-size:1.4rem;font-weight:700">${cnt}</div>
-        <div style="font-size:.65rem">${loc}</div></div>`;}).join("")}
+        <div style="font-size:.65rem">${loc}</div></div>`;}).join('')}
   </div>`;
 
-  // Calendar
   const startD=parseDate(p.start);const endD=parseDate(p.end);
   const months=[];
   let cur=new Date(startD.getFullYear(),startD.getMonth(),1);
@@ -223,45 +264,33 @@ function renderPersonal(){
     const dim=new Date(y,m+1,0).getDate();
     html+=`<div class="cal-wrap"><div class="cal-hdr"><span class="cal-title">${MONTH_NAMES[m]} ${y}</span></div>
       <div class="cal-grid">
-        ${DAY_ABBR.map(d=>`<div class="cal-dow">${d}</div>`).join("")}`;
+        ${DAY_ABBR.map(d=>`<div class="cal-dow">${d}</div>`).join('')}`;
     for(let i=0;i<firstDow;i++)html+=`<div class="cal-day empty"></div>`;
     for(let day=1;day<=dim;day++){
-      const ds=`${y}-${String(m+1).padStart(2,"0")}-${String(day).padStart(2,"0")}`;
+      const ds=`${y}-${String(m+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
       const inR=ds>=p.start&&ds<=p.end;
       const isTod=ds===today;
-      let cls="cal-day";
-      if(!inR)cls+=" outrange";
-      if(isTod)cls+=" is-today";
-      let chip="";
-      if(inR){
-        const a=getAssign(ds,selEmp);const s=LOC_STYLE[a]||LOC_STYLE["Day Off"];
-        if(a!=="Day Off")chip=`<div class="cal-chip" style="background:${s.bg};color:${s.fg}">${a.replace(" Morning"," AM").replace(" Night"," PM")}</div>`;
-      }
+      let cls='cal-day';if(!inR)cls+=' outrange';if(isTod)cls+=' is-today';
+      let chip='';
+      if(inR){const a=getAssign(ds,selEmp);const s=LOC_STYLE[a]||LOC_STYLE["Day Off"];
+        if(a!=='Day Off')chip=`<div class="cal-chip" style="background:${s.bg};color:${s.fg}">${a.replace(' Morning',' AM').replace(' Night',' PM')}</div>`;}
       html+=`<div class="${cls}"><div class="cal-num">${day}</div>${chip}</div>`;
     }
     const trail=(7-(firstDow+dim)%7)%7;
     for(let i=0;i<trail;i++)html+=`<div class="cal-day empty"></div>`;
-    html+="</div></div>";
+    html+='</div></div>';
   });
 
-  // Day-by-day list
   html+=`<div class="card"><div class="card-head"><h2>Day-by-day</h2></div>
     <div style="padding:0"><table><thead><tr><th>Date</th><th>Day</th><th>Assignment</th></tr></thead><tbody>
-    ${dates.map(d=>{
-      const a=getAssign(d,selEmp);const s=LOC_STYLE[a]||LOC_STYLE["Day Off"];
-      return `<tr><td style="font-weight:500">${parseDate(d).toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric"})}</td>
+    ${dates.map(d=>{const a=getAssign(d,selEmp);const s=LOC_STYLE[a]||LOC_STYLE["Day Off"];
+      return `<tr><td style="font-weight:500">${parseDate(d).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}</td>
         <td style="color:var(--muted)">${dowName(d)}</td>
-        <td><span class="chip" style="background:${s.bg};color:${s.fg}">${a}</span></td></tr>`;
-    }).join("")}
+        <td><span class="chip" style="background:${s.bg};color:${s.fg}">${a}</span></td></tr>`;}).join('')}
     </tbody></table></div></div>`;
 
-  document.getElementById("personal-content").innerHTML=html;
+  document.getElementById('personal-content').innerHTML=html;
 }
-
-// Init
-syncSels();
-renderFull();
-renderEmpPicker();
 </script>
 </body>
 </html>
