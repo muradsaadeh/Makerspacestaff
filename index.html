@@ -3,11 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title> The Makerspace Team Schedule</title>
+<title>Staff Rotation Portal</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Segoe UI',system-ui,sans-serif;background:#0F1623;color:#fff;min-height:100vh;display:flex;flex-direction:column}
-/* background subtle grid */
 body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(255,255,255,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none}
 header{padding:1.25rem 2rem;display:flex;align-items:center;gap:10px;border-bottom:1px solid rgba(255,255,255,.08);position:relative;z-index:1}
 .logo{width:36px;height:36px;background:#1A6FB5;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.1rem}
@@ -36,42 +35,46 @@ main{flex:1;display:flex;flex-direction:column;align-items:center;justify-conten
 .badge-lock{background:rgba(139,92,246,.1);color:#C4B5FD;border:1px solid rgba(139,92,246,.2)}
 .pills{display:flex;gap:6px;flex-wrap:wrap;margin-top:1.5rem;justify-content:center}
 .pill{padding:4px 12px;border-radius:20px;font-size:.72rem;color:#64748B;border:1px solid rgba(255,255,255,.07);background:rgba(255,255,255,.03)}
+.live-dot{width:7px;height:7px;border-radius:50%;background:#4ADE80;display:inline-block;margin-right:4px;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
 footer{text-align:center;padding:1.25rem;font-size:.75rem;color:#334155;position:relative;z-index:1}
 </style>
 </head>
 <body>
 <header>
-  <div class="logo">🗓</div>
+  <div class="logo">&#128197;</div>
   <div>
-    <div class="logo-text">Rotation Schedule</div>
-    <div class="logo-sub">KHBP · AYC · Mobile Lab · Outreach</div>
+    <div class="logo-text">Rotation Schedule — The Makerspace Staff</div>
+    <div class="logo-sub">KHBP &middot; AYC Morning &middot; AYC Night &middot; Mobile Lab &middot; Outreach</div>
   </div>
 </header>
 <main>
   <div class="hero">
-    <h1>The Makerspace Team Schedule Portal</h1>
-    <p>View the full team schedule.</p>
+    <h1>Staff Rotation Portal</h1>
+    <p>View the full team schedule, check your personal assignments, or manage the rotation as an admin.</p>
     <div class="pills">
-
+      <span class="pill"><span class="live-dot"></span>Live sync</span>
+      <span class="pill">Max 6 days/week</span>
+      <span class="pill">29 Jun 2025 onwards</span>
     </div>
   </div>
   <div class="cards">
     <a href="staff.html" class="card card-staff">
-      <div class="card-icon icon-staff">👥</div>
+      <div class="card-icon icon-staff">&#128101;</div>
       <h2>Staff View</h2>
-      <p>Check your schedule.</p>
-      <span class="badge badge-view">👁 View only</span>
-      <div class="card-arrow">→</div>
+      <p>See the full team schedule and your personal monthly calendar. Updates in real time.</p>
+      <span class="badge badge-view">&#128065; View only</span>
+      <div class="card-arrow">&#8594;</div>
     </a>
     <a href="admin.html" class="card card-admin">
-      <div class="card-icon icon-admin">⚙️</div>
+      <div class="card-icon icon-admin">&#9881;&#65039;</div>
       <h2>Admin Panel</h2>
-      <p>For senior team use only!.</p>
-      <span class="badge badge-lock">🔐 Password protected</span>
-      <div class="card-arrow">→</div>
+      <p>Manage names, assign locations, review the daily brief and weekly summary.</p>
+      <span class="badge badge-lock">&#128272; Password protected</span>
+      <div class="card-arrow">&#8594;</div>
     </a>
   </div>
 </main>
-<footer>The Makerspace Team Schedule · Internal use only</footer>
+<footer>Rotation Schedule &middot; The Makerspace Staff &middot; Internal use only</footer>
 </body>
 </html>
