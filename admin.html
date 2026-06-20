@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Admin Panel — Makerspace Staff</title>
+<title>Admin — Rotation Schedule</title>
 <style>
 :root{
   --navy:#1C2333;--navy2:#2d3a55;--bg:#F5F6F8;--card:#fff;
@@ -14,16 +14,13 @@
   --mob-bg:#FDEECE;--mob-fg:#6B3E00;
   --out-bg:#FDE0EB;--out-fg:#6B162F;
   --off-bg:#F0F0EE;--off-fg:#888;
-  --fri-bg:#EDEDED;--fri-fg:#AAA;
   --red-bg:#FFD7D7;--red-fg:#8B0000;
   --grn-bg:#E8F5E9;--grn-fg:#1B5E20;
   --radius:8px;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
-
-/* ── lock screen ── */
-#lock{position:fixed;inset:0;background:#0F1623;display:flex;align-items:center;justify-content:center;z-index:9999;flex-direction:column;gap:0}
+#lock{position:fixed;inset:0;background:#0F1623;display:flex;align-items:center;justify-content:center;z-index:9999}
 .lock-box{background:#1A2035;border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:2.5rem 2rem;width:320px;text-align:center}
 .lock-icon{font-size:2.5rem;margin-bottom:1rem}
 .lock-box h1{font-size:1.15rem;font-weight:700;color:#F1F5F9;margin-bottom:.35rem}
@@ -36,13 +33,15 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 .lock-back{margin-top:1rem;font-size:.78rem;color:#475569;cursor:pointer;text-decoration:underline}
 .lock-back:hover{color:#94A3B8}
 #app{display:none}
-
-/* ── layout ── */
 header{background:var(--navy);color:#fff;padding:.875rem 1.5rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200}
 header h1{font-size:1rem;font-weight:600}
 header p{font-size:.75rem;color:#9AABB8;margin-top:1px}
-.hbadge{background:#F0B429;color:#5A3800;font-size:.7rem;font-weight:700;padding:3px 10px;border-radius:20px;text-transform:uppercase;letter-spacing:.05em}
+.hbadge{background:#F0B429;color:#5A3800;font-size:.7rem;font-weight:700;padding:3px 10px;border-radius:20px;text-transform:uppercase}
 .hbtns{display:flex;gap:8px;align-items:center}
+.sync-status{font-size:.72rem;padding:3px 10px;border-radius:20px;font-weight:600}
+.sync-ok{background:rgba(74,222,128,.15);color:#4ADE80;border:1px solid rgba(74,222,128,.3)}
+.sync-saving{background:rgba(251,191,36,.15);color:#FBbf24;border:1px solid rgba(251,191,36,.3)}
+.sync-err{background:rgba(248,113,113,.15);color:#F87171;border:1px solid rgba(248,113,113,.3)}
 nav{background:var(--navy2);display:flex;overflow-x:auto}
 .nav-btn{padding:.65rem 1.25rem;color:#CBD5E0;font-size:.85rem;cursor:pointer;border:none;background:transparent;white-space:nowrap;border-bottom:3px solid transparent;transition:all .15s;font-family:inherit}
 .nav-btn.active{color:#fff;border-bottom-color:#F0B429}
@@ -58,7 +57,8 @@ main{padding:1.5rem}
 .btn-primary{background:var(--navy);color:#fff;border-color:var(--navy)}.btn-primary:hover{background:var(--navy2)}
 .btn-sm{padding:4px 10px;font-size:.75rem}
 .btn-danger{color:#DC2626;border-color:#FCA5A5}.btn-danger:hover{background:#FFF5F5}
-.btn-ghost{background:transparent;border:1px solid rgba(255,255,255,.2);color:#fff}.btn-ghost:hover{background:rgba(255,255,255,.1)}
+.btn-ghost{background:transparent;border:1px solid rgba(255,255,255,.2);color:#fff;font-size:.78rem;padding:4px 10px;border-radius:6px;cursor:pointer;font-family:inherit}
+.btn-ghost:hover{background:rgba(255,255,255,.1)}
 input[type=text],select{padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:.85rem;font-family:inherit;background:#fff;color:var(--text)}
 input[type=text]:focus,select:focus{outline:none;border-color:#93C5FD}
 .tbl-wrap{overflow-x:auto}
@@ -67,7 +67,6 @@ th,td{padding:7px 9px;border:1px solid var(--border);white-space:nowrap}
 th{background:var(--navy);color:#fff;font-weight:500;text-align:center;position:sticky;top:0;z-index:10}
 th.name-hd{text-align:left}
 td.name-cell{font-weight:600;color:var(--navy);position:sticky;left:0;background:#fff;z-index:5;min-width:140px}
-.fri-cell{background:var(--fri-bg)!important;color:var(--fri-fg)!important;font-style:italic;font-size:.72rem;text-align:center}
 select.cell-sel{border:none;padding:2px 4px;font-size:.75rem;font-weight:600;border-radius:4px;cursor:pointer;width:100%;text-align:center;font-family:inherit}
 .metrics{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin-bottom:1.25rem}
 .metric{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:.875rem 1rem;text-align:center}
@@ -76,7 +75,6 @@ select.cell-sel{border:none;padding:2px 4px;font-size:.75rem;font-weight:600;bor
 .brief-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px}
 .brief-day-card{border-radius:var(--radius);border:1px solid var(--border);overflow:hidden}
 .brief-day-hd{padding:5px 8px;font-size:.72rem;font-weight:700;text-align:center;background:var(--navy);color:#fff}
-.brief-day-hd.fri-hd{background:var(--fri-bg);color:var(--fri-fg)}
 .brief-loc-row{display:flex;justify-content:space-between;align-items:center;padding:4px 8px;font-size:.72rem;border-top:1px solid var(--border)}
 .brief-loc-row.ok{background:var(--grn-bg)}.brief-loc-row.warn{background:var(--red-bg)}
 .brief-count{font-weight:700;font-size:.85rem}
@@ -87,43 +85,42 @@ select.cell-sel{border:none;padding:2px 4px;font-size:.75rem;font-weight:600;bor
 .period-bar label{font-size:.82rem;color:var(--muted)}
 .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--navy);color:#fff;padding:10px 20px;border-radius:30px;font-size:.85rem;z-index:9998;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
 .toast.show{opacity:1}.toast.warn{background:#B91C1C}
+.live-dot{width:7px;height:7px;border-radius:50%;background:#4ADE80;display:inline-block;margin-right:4px;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
 </style>
 </head>
 <body>
 
-<!-- LOCK SCREEN -->
 <div id="lock">
   <div class="lock-box">
-    <div class="lock-icon">🔐</div>
+    <div class="lock-icon">&#128272;</div>
     <h1>Admin access</h1>
-    <p>Enter your password to manage the Makerspace Team schedule</p>
-    <input class="lock-input" type="password" id="pw-input" placeholder="••••••••" maxlength="32"
-      onkeydown="if(event.key==='Enter')tryLogin()">
+    <p>Enter your password to manage the rotation schedule</p>
+    <input class="lock-input" type="password" id="pw-input" placeholder="&#9679;&#9679;&#9679;&#9679;&#9679;&#9679;&#9679;&#9679;" maxlength="32" onkeydown="if(event.key==='Enter')tryLogin()">
     <button class="lock-btn" onclick="tryLogin()">Unlock admin panel</button>
     <div class="lock-err" id="pw-err"></div>
-    <div class="lock-back" onclick="location.href='index.html'">← Back to portal</div>
+    <div class="lock-back" onclick="location.href='index.html'">&#8592; Back to portal</div>
   </div>
 </div>
 
-<!-- APP -->
 <div id="app">
 <header>
   <div>
-    <h1>⚙️ Admin Panel — Makerspace Team Schedule</h1>
-    <p>Max 6 days/week · 29 Jun 2025</p>
+    <h1>&#9881;&#65039; Admin Panel &mdash; Rotation Schedule</h1>
+    <p><span class="live-dot"></span>Live sync via Firebase &middot; Max 6 days/week &middot; 29 Jun 2025</p>
   </div>
   <div class="hbtns">
     <span class="hbadge">Admin</span>
-    <button class="btn btn-sm btn-ghost" onclick="exportData()">💾 Export</button>
-    <label class="btn btn-sm btn-ghost" style="cursor:pointer">📂 Import<input type="file" accept=".json" style="display:none" onchange="importData(event)"></label>
-    <button class="btn btn-sm btn-ghost" onclick="logout()">🔒 Lock</button>
+    <span class="sync-status sync-ok" id="sync-status">&#10003; Synced</span>
+    <button class="btn-ghost" onclick="logout()">&#128274; Lock</button>
+    <a href="index.html" class="btn-ghost" style="text-decoration:none">&#8592; Portal</a>
   </div>
 </header>
 <nav>
-  <button class="nav-btn active" onclick="showTab('names',this)">👥 Names</button>
-  <button class="nav-btn" onclick="showTab('schedule',this)">📅 Schedule</button>
-  <button class="nav-btn" onclick="showTab('brief',this)">📊 Daily Brief</button>
-  <button class="nav-btn" onclick="showTab('summary',this)">📈 Summary</button>
+  <button class="nav-btn active" onclick="showTab('names',this)">&#128101; Names</button>
+  <button class="nav-btn" onclick="showTab('schedule',this)">&#128197; Schedule</button>
+  <button class="nav-btn" onclick="showTab('brief',this)">&#128202; Daily Brief</button>
+  <button class="nav-btn" onclick="showTab('summary',this)">&#128200; Summary</button>
 </nav>
 <main>
   <div id="tab-names" class="section active">
@@ -148,7 +145,7 @@ select.cell-sel{border:none;padding:2px 4px;font-size:.75rem;font-weight:600;bor
     <div class="period-bar"><label>Period:</label><select id="brief-period-sel" onchange="renderBrief()"></select></div>
     <div class="metrics" id="brief-metrics"></div>
     <div id="brief-content"></div>
-    <p style="font-size:.78rem;color:#DC2626;margin-top:.5rem">⚠ Red = below minimum. Fix in the Schedule tab.</p>
+    <p style="font-size:.78rem;color:#DC2626;margin-top:.5rem">&#9888; Red = below minimum. Fix in the Schedule tab.</p>
   </div>
   <div id="tab-summary" class="section">
     <div class="period-bar"><label>Period:</label><select id="sum-period-sel" onchange="renderSummary()"></select></div>
@@ -160,31 +157,47 @@ select.cell-sel{border:none;padding:2px 4px;font-size:.75rem;font-weight:600;bor
 <div id="modal-root"></div>
 <div class="toast" id="toast"></div>
 
-<script>
+<!-- Firebase -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
+import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyB9MstqwrUM1b7SoENXq9wMbe_j10lWkiw",
+  authDomain: "the-makerspace-staff.firebaseapp.com",
+  databaseURL: "https://the-makerspace-staff-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "the-makerspace-staff",
+  storageBucket: "the-makerspace-staff.firebasestorage.app",
+  messagingSenderId: "1012535086057",
+  appId: "1:1012535086057:web:619438ffe3dc3c3dd55978"
+};
+
+const fbApp = initializeApp(firebaseConfig);
+const db = getDatabase(fbApp);
+const schedRef = ref(db, 'rotation');
+
 // ── Password ─────────────────────────────────────────────────────────────────
-// Change ADMIN_PASSWORD to whatever you want
 const ADMIN_PASSWORD = 'Admin@2025';
 const SESSION_KEY = 'rotation_admin_session';
 
-function tryLogin(){
+window.tryLogin = function(){
   const pw = document.getElementById('pw-input').value;
   if(pw === ADMIN_PASSWORD){
     sessionStorage.setItem(SESSION_KEY,'1');
     document.getElementById('lock').style.display='none';
     document.getElementById('app').style.display='block';
-    init();
+    startFirebase();
   } else {
     const err = document.getElementById('pw-err');
     err.textContent = 'Incorrect password. Please try again.';
     document.getElementById('pw-input').value='';
     setTimeout(()=>err.textContent='',3000);
   }
-}
-function logout(){
+};
+window.logout = function(){
   sessionStorage.removeItem(SESSION_KEY);
   location.reload();
-}
-// Auto-unlock if already authenticated this session
+};
 if(sessionStorage.getItem(SESSION_KEY)==='1'){
   document.getElementById('lock').style.display='none';
   document.getElementById('app').style.display='block';
@@ -202,49 +215,81 @@ const LOC_STYLE={
 };
 const MIN_STAFF={"KHBP":2,"AYC Morning":1,"AYC Night":1,"Mobile Lab":2};
 const DAY_ABBR=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
-const MONTH_NAMES=["January","February","March","April","May","June","July","August","September","October","November","December"];
 
-// ── State ────────────────────────────────────────────────────────────────────
-let state;
-function defaultState(){
-  return {
-    employees:["Ala'a Janbak","Mohammed Hinti","Bashar Al-zubi","Ghadeer AbuRashed",
-               "Ahmad Shwayat","Ahmad Abu Ghazaleh","Momen Kamal","Ahmad Abu Slayeh",
-               "Ismail Qashoue","Ahmad Fares","Murad Saadeh"],
-    schedule:{},
-    periods:[{label:"29 Jun – 1 Aug 2025",start:"2025-06-29",end:"2025-08-01"}]
-  };
+// ── State ─────────────────────────────────────────────────────────────────────
+let state = {
+  employees:["Ala'a Janbak","Mohammed Hinti","Bashar Al-zubi","Ghadeer AbuRashed",
+             "Ahmad Shwayat","Ahmad Abu Ghazaleh","Momen Kamal","Ahmad Abu Slayeh",
+             "Ismail Qashoue","Ahmad Fares","Murad Saadeh"],
+  schedule:{},
+  periods:[{label:"29 Jun – 1 Aug 2025",start:"2025-06-29",end:"2025-08-01"}]
+};
+let fbReady = false;
+let saveTimer = null;
+
+function setSyncStatus(s){
+  const el=document.getElementById('sync-status');
+  if(!el)return;
+  if(s==='saving'){el.className='sync-status sync-saving';el.textContent='&#8593; Saving...';}
+  else if(s==='ok'){el.className='sync-status sync-ok';el.innerHTML='&#10003; Synced';}
+  else{el.className='sync-status sync-err';el.textContent='&#9888; Error';}
 }
-function loadState(){
-  try{const r=localStorage.getItem('rotation_v4');if(r)return JSON.parse(r);}catch(e){}
-  return defaultState();
+
+function saveToFirebase(){
+  setSyncStatus('saving');
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(()=>{
+    set(schedRef, state)
+      .then(()=>setSyncStatus('ok'))
+      .catch(()=>setSyncStatus('err'));
+  }, 600);
 }
-function saveState(){
-  localStorage.setItem('rotation_v4',JSON.stringify(state));
-  localStorage.setItem('rotation_staff_v4',JSON.stringify({employees:state.employees,schedule:state.schedule,periods:state.periods}));
+
+function startFirebase(){
+  onValue(schedRef, (snapshot)=>{
+    const data = snapshot.val();
+    if(data){
+      state = data;
+      if(!state.periods) state.periods=[{label:"29 Jun – 1 Aug 2025",start:"2025-06-29",end:"2025-08-01"}];
+      if(!state.schedule) state.schedule={};
+    }
+    if(!fbReady){
+      fbReady=true;
+      renderNames();
+      syncSels();
+      setSyncStatus('ok');
+    } else {
+      // Remote update — re-render current tab
+      const active=document.querySelector('.section.active')?.id?.replace('tab-','');
+      if(active) ({names:renderNames,schedule:renderSchedule,brief:renderBrief,summary:renderSummary})[active]?.();
+      syncSels();
+      setSyncStatus('ok');
+    }
+  }, ()=>setSyncStatus('err'));
 }
+
+if(sessionStorage.getItem(SESSION_KEY)==='1') startFirebase();
 
 // ── Date utils ───────────────────────────────────────────────────────────────
 function fmtDate(d){return d.toISOString().slice(0,10)}
 function parseDate(s){return new Date(s+'T00:00:00')}
-function isFri(s){return parseDate(s).getDay()===5}
 function isSun(s){return parseDate(s).getDay()===0}
 function dowName(s){return DAY_ABBR[parseDate(s).getDay()]}
 function dayNum(s){return parseInt(s.slice(8))}
 function dateRange(s,e){const a=[];let d=new Date(s+'T00:00:00');const end=new Date(e+'T00:00:00');while(d<=end){a.push(fmtDate(d));d=new Date(d.getTime()+86400000);}return a;}
 function toWeeks(dates){const w=[];let wk=[];for(const d of dates){if(isSun(d)&&wk.length){w.push(wk);wk=[];}wk.push(d);}if(wk.length)w.push(wk);return w;}
-function getAssign(date,ei){return state.schedule[`${date}:${ei}`]||(isFri(date)?'Day Off':'Day Off');}
-function setAssign(date,ei,loc){state.schedule[`${date}:${ei}`]=loc;saveState();}
+function getAssign(date,ei){return state.schedule[`${date}:${ei}`]||'Day Off';}
+function setAssign(date,ei,loc){state.schedule[`${date}:${ei}`]=loc;saveToFirebase();}
 function getWeekDays(ei,wk){return wk.filter(d=>getAssign(d,ei)!=='Day Off').length;}
 
 // ── Tab ──────────────────────────────────────────────────────────────────────
-function showTab(name,btn){
+window.showTab = function(name,btn){
   document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('tab-'+name).classList.add('active');
   if(btn)btn.classList.add('active');
   ({names:renderNames,schedule:()=>{syncSels();renderSchedule()},brief:()=>{syncSels();renderBrief()},summary:()=>{syncSels();renderSummary()}})[name]?.();
-}
+};
 function syncSels(){
   ['period-sel','brief-period-sel','sum-period-sel'].forEach(id=>{
     const s=document.getElementById(id);if(!s)return;
@@ -255,32 +300,32 @@ function syncSels(){
 function curPeriod(id){const i=parseInt(document.getElementById(id)?.value||0);return state.periods[i]||state.periods[0];}
 
 // ── Add month ────────────────────────────────────────────────────────────────
-function addMonth(){
+window.addMonth = function(){
   const last=state.periods[state.periods.length-1];
   const after=new Date(last.end+'T00:00:00');after.setDate(after.getDate()+1);
   const end=new Date(after.getFullYear(),after.getMonth()+1,0);
   const s=fmtDate(after),e=fmtDate(end);
   const label=`${after.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})} – ${end.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}`;
   state.periods.push({label,start:s,end:e});
-  saveState();syncSels();
+  saveToFirebase();syncSels();
   document.getElementById('period-sel').value=state.periods.length-1;
   renderSchedule();toast('Month added.');
-}
+};
 
 // ── Names ────────────────────────────────────────────────────────────────────
 function renderNames(){
   document.getElementById('names-tbody').innerHTML=state.employees.map((n,i)=>`
     <tr><td style="text-align:center;color:var(--muted)">${i+1}</td><td>${n}</td>
-    <td style="text-align:center"><button class="btn btn-sm" onclick="editEmp(${i})">✏️</button> <button class="btn btn-sm btn-danger" onclick="delEmp(${i})">🗑</button></td></tr>`).join('');
+    <td style="text-align:center"><button class="btn btn-sm" onclick="editEmp(${i})">&#9999;&#65039;</button> <button class="btn btn-sm btn-danger" onclick="delEmp(${i})">&#128465;</button></td></tr>`).join('');
 }
-function openAddEmp(){showModal(`<h3 style="margin-bottom:1rem;font-size:1rem">Add employee</h3>
+window.openAddEmp = function(){showModal(`<h3 style="margin-bottom:1rem;font-size:1rem">Add employee</h3>
   <input type="text" id="f-name" placeholder="Full name" style="width:100%;margin-bottom:1rem">
-  <div style="display:flex;gap:8px;justify-content:flex-end"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="saveEmp()">Add</button></div>`);}
-function editEmp(i){showModal(`<h3 style="margin-bottom:1rem;font-size:1rem">Edit name</h3>
+  <div style="display:flex;gap:8px;justify-content:flex-end"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="saveEmp()">Add</button></div>`);};
+window.editEmp = function(i){showModal(`<h3 style="margin-bottom:1rem;font-size:1rem">Edit name</h3>
   <input type="text" id="f-name" value="${state.employees[i]}" style="width:100%;margin-bottom:1rem">
-  <div style="display:flex;gap:8px;justify-content:flex-end"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="saveEmp(${i})">Save</button></div>`);}
-function saveEmp(i){const n=document.getElementById('f-name').value.trim();if(!n)return;if(i!==undefined)state.employees[i]=n;else state.employees.push(n);saveState();closeModal();renderNames();}
-function delEmp(i){if(!confirm(`Remove "${state.employees[i]}"?`))return;state.employees.splice(i,1);saveState();renderNames();}
+  <div style="display:flex;gap:8px;justify-content:flex-end"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="saveEmp(${i})">Save</button></div>`);};
+window.saveEmp = function(i){const n=document.getElementById('f-name').value.trim();if(!n)return;if(i!==undefined)state.employees[i]=n;else state.employees.push(n);saveToFirebase();closeModal();renderNames();};
+window.delEmp = function(i){if(!confirm(`Remove "${state.employees[i]}"?`))return;state.employees.splice(i,1);saveToFirebase();renderNames();};
 
 // ── Schedule ─────────────────────────────────────────────────────────────────
 function renderSchedule(){
@@ -289,8 +334,7 @@ function renderSchedule(){
   const weeks=toWeeks(dates);
   const N=state.employees.length;
   document.getElementById('sched-legend').innerHTML=Object.entries(LOC_STYLE).map(([loc,{bg,fg}])=>
-    `<div class="leg"><div class="leg-dot" style="background:${bg};border:1px solid ${fg}40"></div>${loc}</div>`).join('')+
-    `<div class="leg"><div class="leg-dot" style="background:var(--fri-bg)"></div></div>`;
+    `<div class="leg"><div class="leg-dot" style="background:${bg};border:1px solid ${fg}40"></div>${loc}</div>`).join('');
   let hdr1='<tr><th class="name-hd" rowspan="2" style="position:sticky;left:0;z-index:20;min-width:140px">Employee</th>';
   weeks.forEach((wk,wi)=>{
     hdr1+=`<th colspan="${wk.length}" style="background:#2d3a55">${parseDate(wk[0]).toLocaleDateString('en-GB',{day:'numeric',month:'short'})} – ${parseDate(wk[wk.length-1]).toLocaleDateString('en-GB',{day:'numeric',month:'short'})}</th>`;
@@ -298,7 +342,6 @@ function renderSchedule(){
   });
   hdr1+='</tr><tr>';
   weeks.forEach(wk=>wk.forEach(d=>{
-    const fri=isFri(d);
     hdr1+=`<th style="background:var(--navy);color:#fff;font-size:.72rem;min-width:50px">${dayNum(d)}<br>${dowName(d)}</th>`;
   }));
   hdr1+='</tr>';
@@ -308,7 +351,6 @@ function renderSchedule(){
     weeks.forEach((wk,wi)=>{
       let wkN=0;
       wk.forEach(d=>{
-        
         const a=getAssign(d,ei);const s=LOC_STYLE[a]||LOC_STYLE["Day Off"];
         if(a!=='Day Off')wkN++;
         tbody+=`<td style="padding:2px;background:${s.bg}"><select class="cell-sel" style="background:${s.bg};color:${s.fg}" onchange="onCell(this,'${d}',${ei})">
@@ -321,7 +363,7 @@ function renderSchedule(){
   }
   document.getElementById('sched-wrap').innerHTML=`<table><thead>${hdr1}</thead><tbody>${tbody}</tbody></table>`;
 }
-function onCell(sel,date,ei){
+window.onCell = function(sel,date,ei){
   const val=sel.value;
   const p=curPeriod('period-sel');
   const weeks=toWeeks(dateRange(p.start,p.end));
@@ -330,9 +372,9 @@ function onCell(sel,date,ei){
   sel.style.background=s.bg;sel.style.color=s.fg;sel.parentElement.style.background=s.bg;
   const wk=weeks.find(w=>w.includes(date))||[];
   const c=getWeekDays(ei,wk);
-  if(c>6)toast(`⚠ ${state.employees[ei]}: ${c} days this week — over limit!`,true);
+  if(c>6)toast(`&#9888; ${state.employees[ei]}: ${c} days this week — over limit!`,true);
   renderSchedule();
-}
+};
 
 // ── Brief ────────────────────────────────────────────────────────────────────
 function renderBrief(){
@@ -344,33 +386,30 @@ function renderBrief(){
   let issues=0;
   let html='';
   weeks.forEach((wk,wi)=>{
-    html+=`<div style="margin-bottom:1.5rem"><h3 style="font-size:.82rem;font-weight:600;color:var(--muted);margin-bottom:.75rem;text-transform:uppercase;letter-spacing:.05em">Week ${wi+1} · ${parseDate(wk[0]).toLocaleDateString('en-GB',{day:'numeric',month:'short'})} – ${parseDate(wk[wk.length-1]).toLocaleDateString('en-GB',{day:'numeric',month:'short'})}</h3><div class="brief-grid">`;
+    html+=`<div style="margin-bottom:1.5rem"><h3 style="font-size:.82rem;font-weight:600;color:var(--muted);margin-bottom:.75rem;text-transform:uppercase;letter-spacing:.05em">Week ${wi+1} &middot; ${parseDate(wk[0]).toLocaleDateString('en-GB',{day:'numeric',month:'short'})} – ${parseDate(wk[wk.length-1]).toLocaleDateString('en-GB',{day:'numeric',month:'short'})}</h3><div class="brief-grid">`;
     wk.forEach(d=>{
-      const fri=isFri(d);
-      html+=`<div class="brief-day-card"><div class="brief-day-hd ">${parseDate(d).toLocaleDateString('en-GB',{day:'numeric',month:'short'})}<br>${dowName(d)}</div>`;
-      {
-        let tot=0;
-        TRACK.forEach(loc=>{
-          const cnt=state.employees.filter((_,ei)=>getAssign(d,ei)===loc).length;
-          const min=MIN_STAFF[loc]||0;const ok=!min||cnt>=min;
-          if(!ok)issues++;
-          if(cnt>0||min>0){
-            html+=`<div class="brief-loc-row ${ok?'ok':'warn'}">
-              <span style="font-size:.68rem">${loc.replace(' Morning',' AM').replace(' Night',' PM').replace('Mobile Lab','Mob.')}</span>
-              <span class="brief-count">${cnt}${min?'/'+min:''}</span></div>`;
-            tot+=cnt;
-          }
-        });
-        html+=`<div class="brief-loc-row" style="border-top:2px solid var(--border);background:#f9f9f9"><span style="font-size:.68rem;font-weight:600">Total</span><span class="brief-count">${tot}</span></div>`;
-      }
+      html+=`<div class="brief-day-card"><div class="brief-day-hd">${parseDate(d).toLocaleDateString('en-GB',{day:'numeric',month:'short'})}<br>${dowName(d)}</div>`;
+      let tot=0;
+      TRACK.forEach(loc=>{
+        const cnt=state.employees.filter((_,ei)=>getAssign(d,ei)===loc).length;
+        const min=MIN_STAFF[loc]||0;const ok=!min||cnt>=min;
+        if(!ok)issues++;
+        if(cnt>0||min>0){
+          html+=`<div class="brief-loc-row ${ok?'ok':'warn'}">
+            <span style="font-size:.68rem">${loc.replace(' Morning',' AM').replace(' Night',' PM').replace('Mobile Lab','Mob.')}</span>
+            <span class="brief-count">${cnt}${min?'/'+min:''}</span></div>`;
+          tot+=cnt;
+        }
+      });
+      html+=`<div class="brief-loc-row" style="border-top:2px solid var(--border);background:#f9f9f9"><span style="font-size:.68rem;font-weight:600">Total</span><span class="brief-count">${tot}</span></div>`;
       html+='</div>';
     });
     html+='</div></div>';
   });
   document.getElementById('brief-metrics').innerHTML=`
     <div class="metric"><div class="metric-val" style="color:${issues>0?'#DC2626':'#16A34A'}">${issues}</div><div class="metric-lbl">Staffing issues</div></div>
-    <div class="metric"><div class="metric-val">${dates.length}</div><div class="metric-lbl">Working days</div></div>
-    <div class="metric"><div class="metric-val">${N}</div><div class="metric-lbl">Employees</div></div>`;
+    <div class="metric"><div class="metric-val">${dates.length}</div><div class="metric-lbl">Days in period</div></div>
+    <div class="metric"><div class="metric-val">${state.employees.length}</div><div class="metric-lbl">Employees</div></div>`;
   document.getElementById('brief-content').innerHTML=html;
 }
 
@@ -387,7 +426,7 @@ function renderSummary(){
   for(let ei=0;ei<N;ei++){
     let tot=0;
     const cells=weeks.map(wk=>{const c=getWeekDays(ei,wk);tot+=c;const over=c>6;
-      return `<td style="text-align:center;font-weight:700;background:${over?'var(--red-bg)':c>0?'var(--grn-bg)':'var(--off-bg)'};color:${over?'var(--red-fg)':c>0?'var(--grn-fg)':'var(--off-fg)'}">${c}${over?' ⚠':''}</td>`;
+      return `<td style="text-align:center;font-weight:700;background:${over?'var(--red-bg)':c>0?'var(--grn-bg)':'var(--off-bg)'};color:${over?'var(--red-fg)':c>0?'var(--grn-fg)':'var(--off-fg)'}">${c}${over?' &#9888;':''}</td>`;
     }).join('');
     html+=`<tr><td class="name-cell" style="position:sticky;left:0">${state.employees[ei]}</td>${cells}<td style="text-align:center;font-weight:700">${tot}</td></tr>`;
   }
@@ -396,18 +435,11 @@ function renderSummary(){
 }
 
 // ── Modal / Toast ─────────────────────────────────────────────────────────────
-function showModal(html){document.getElementById('modal-root').innerHTML=`<div style="position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:9000" onclick="if(event.target===this)closeModal()"><div style="background:#fff;border-radius:12px;padding:1.5rem;width:340px;max-width:95vw">${html}</div></div>`;}
-function closeModal(){document.getElementById('modal-root').innerHTML='';}
+window.showModal = function(html){document.getElementById('modal-root').innerHTML=`<div style="position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:9000" onclick="if(event.target===this)closeModal()"><div style="background:#fff;border-radius:12px;padding:1.5rem;width:340px;max-width:95vw">${html}</div></div>`;};
+window.closeModal = function(){document.getElementById('modal-root').innerHTML='';};
 let _tt;
-function toast(msg,warn=false){const t=document.getElementById('toast');t.textContent=msg;t.className='toast show'+(warn?' warn':'');clearTimeout(_tt);_tt=setTimeout(()=>t.className='toast',4000);}
+window.toast = function(msg,warn=false){const t=document.getElementById('toast');t.innerHTML=msg;t.className='toast show'+(warn?' warn':'');clearTimeout(_tt);_tt=setTimeout(()=>t.className='toast',4000);};
 
-// ── Export/Import ─────────────────────────────────────────────────────────────
-function exportData(){const b=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='rotation_schedule.json';a.click();}
-function importData(ev){const f=ev.target.files[0];if(!f)return;const r=new FileReader();r.onload=e=>{try{state=JSON.parse(e.target.result);saveState();renderNames();syncSels();toast('Imported.');}catch{toast('Invalid file.',true);}};r.readAsText(f);}
-
-// ── Init ──────────────────────────────────────────────────────────────────────
-function init(){state=loadState();saveState();renderNames();syncSels();}
-if(sessionStorage.getItem(SESSION_KEY)==='1')init();
 </script>
 </body>
 </html>
