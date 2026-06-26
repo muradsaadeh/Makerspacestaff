@@ -83,6 +83,7 @@ td.name-cell{font-weight:600;color:var(--navy);position:sticky;left:0;background
 <nav>
   <button class="nav-btn active" onclick="showTab('full',this)">&#128197; Full Schedule</button>
   <button class="nav-btn" onclick="showTab('personal',this)">&#128100; My Schedule</button>
+  <button class="nav-btn" onclick="showTab('location',this)">&#128205; Location View</button>
 </nav>
 <main>
   <div id="tab-full" class="section active">
@@ -100,6 +101,14 @@ td.name-cell{font-weight:600;color:var(--navy);position:sticky;left:0;background
     </div>
     <div class="emp-grid" id="emp-picker"></div>
     <div id="personal-content"></div>
+  </div>
+  <div id="tab-location" class="section">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:1rem">
+      <h2 style="font-size:.95rem;font-weight:600">Select a location</h2>
+      <div class="period-bar" style="margin:0"><label>Period:</label><select id="loc-psel" onchange="renderLocation()"></select></div>
+    </div>
+    <div class="emp-grid" id="loc-picker"></div>
+    <div id="location-content"></div>
   </div>
 </main>
 
@@ -127,6 +136,7 @@ const LOC_STYLE={
   "AYC Night":   {bg:"#E9E5FC",fg:"#31216B"},
   "Mobile Lab":  {bg:"#FDEECE",fg:"#6B3E00"},
   "Outreach":    {bg:"#FDE0EB",fg:"#6B162F"},
+  "Aqaba":       {bg:"#FFF3CD",fg:"#664D03"},
   "Day Off":     {bg:"#F0F0EE",fg:"#888"},
 };
 const DAY_ABBR=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
@@ -142,7 +152,7 @@ onValue(schedRef,(snapshot)=>{
   const data=snapshot.val();
   if(data){
     state=data;
-    if(!state.periods)state.periods=[{label:"29 Jun – 1 Aug 2025",start:"2025-06-29",end:"2025-08-01"}];
+    if(!state.periods)state.periods=[{label:"28 Jun – 31 Jul 2026",start:"2026-06-28",end:"2026-07-31"}];
     setInfoBar('live','<span class="live-dot"></span> Live schedule &mdash; last updated by admin');
     syncSels();
     renderActive();
@@ -170,22 +180,24 @@ window.showTab = function(name,btn){
   if(btn)btn.classList.add('active');
   if(name==='full'){syncSels();renderFull();}
   if(name==='personal'){syncSels();renderEmpPicker();renderPersonal();}
+  if(name==='location'){syncSels('loc-psel');renderLocPicker();renderLocation();}
 };
 
-function syncSels(){
+function syncSels(onlyId){
   if(!state)return;
-  ['full-psel','pers-psel'].forEach(id=>{
+  (onlyId?[onlyId]:['full-psel','pers-psel','loc-psel']).forEach(id=>{
     const s=document.getElementById(id);if(!s)return;
     const v=s.value;s.innerHTML=state.periods.map((p,i)=>`<option value="${i}">${p.label}</option>`).join('');
     if(v&&v<state.periods.length)s.value=v;
   });
 }
-function curPeriod(id){if(!state)return{start:'2025-06-29',end:'2025-08-01'};const i=parseInt(document.getElementById(id)?.value||0);return state.periods[i]||state.periods[0];}
+function curPeriod(id){if(!state)return{start:'2026-06-28',end:'2026-07-31'};const i=parseInt(document.getElementById(id)?.value||0);return state.periods[i]||state.periods[0];}
 
 function renderActive(){
   const active=document.querySelector('.section.active')?.id;
   if(active==='tab-full'){syncSels();renderFull();}
   if(active==='tab-personal'){syncSels();renderEmpPicker();renderPersonal();}
+  if(active==='tab-location'){syncSels();renderLocPicker();renderLocation();}
 }
 
 function renderFull(){
@@ -291,6 +303,115 @@ function renderPersonal(){
 
   document.getElementById('personal-content').innerHTML=html;
 }
+
+window.selLoc = 'KHBP';
+const LOC_LIST = ["KHBP","AYC Morning","AYC Night","Mobile Lab","Outreach","Aqaba"];
+const LOC_ICONS = {"KHBP":"🏥","AYC Morning":"🌅","AYC Night":"🌙","Mobile Lab":"🚐","Outreach":"📢","Aqaba":"🌊"};
+
+function renderLocPicker(){
+  const container = document.getElementById('loc-picker');
+  if(!container) return;
+  container.innerHTML = LOC_LIST.map(loc => {
+    const s = LOC_STYLE[loc] || LOC_STYLE["Day Off"];
+    const active = selLoc === loc;
+    return `<div class="emp-card ${active?'active':''}" onclick="selectLoc('${loc}')"
+      style="${active?'border-color:'+s.fg+';background:'+s.bg+';':''}"
+    >
+      <div class="emp-init" style="background:${s.fg}">${LOC_ICONS[loc]||loc[0]}</div>
+      <div class="emp-label" style="color:${active?s.fg:'var(--navy)'}">${loc}</div>
+    </div>`;
+  }).join('');
+}
+
+window.selectLoc = function(loc){ selLoc=loc; renderLocPicker(); renderLocation(); };
+
+function renderLocation(){
+  if(!state){ document.getElementById('location-content').innerHTML='<div class="no-data">Loading...</div>'; return; }
+  const p = curPeriod('loc-psel');
+  const dates = dateRange(p.start, p.end);
+  const loc = selLoc;
+  const s = LOC_STYLE[loc] || LOC_STYLE["Day Off"];
+  const MONTH_NAMES_L=["January","February","March","April","May","June","July","August","September","October","November","December"];
+  const DAY_ABBR_L=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+
+  // Count total assignments
+  const totalAssignments = dates.reduce((sum,d)=>{
+    return sum + state.employees.filter((_,ei)=>getAssign(d,ei)===loc).length;
+  },0);
+
+  let html = `<div style="display:flex;align-items:center;gap:12px;margin-bottom:1.25rem">
+    <div style="width:46px;height:46px;border-radius:50%;background:${s.fg};color:#fff;display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0">${LOC_ICONS[loc]||loc[0]}</div>
+    <div>
+      <div style="font-size:1.1rem;font-weight:700;color:var(--navy)">${loc}</div>
+      <div style="font-size:.8rem;color:var(--muted)">${parseDate(p.start).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})} – ${parseDate(p.end).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}</div>
+    </div>
+  </div>
+  <div class="stat-grid" style="margin-bottom:1.25rem">
+    <div class="stat" style="background:${s.fg};color:#fff">
+      <div style="font-size:1.5rem;font-weight:700">${totalAssignments}</div>
+      <div style="font-size:.7rem;opacity:.8">Total shifts</div>
+    </div>
+  </div>`;
+
+  // Calendar — one per month
+  const startD = parseDate(p.start); const endD = parseDate(p.end);
+  const months = [];
+  let cur = new Date(startD.getFullYear(), startD.getMonth(), 1);
+  const lastM = new Date(endD.getFullYear(), endD.getMonth(), 1);
+  while(cur <= lastM){ months.push({y:cur.getFullYear(),m:cur.getMonth()}); cur=new Date(cur.getFullYear(),cur.getMonth()+1,1); }
+
+  const today = fmtDate(new Date());
+
+  months.forEach(({y,m})=>{
+    const firstDow = new Date(y,m,1).getDay();
+    const dim = new Date(y,m+1,0).getDate();
+    html += `<div class="cal-wrap"><div class="cal-hdr" style="background:${s.fg}"><span class="cal-title">${MONTH_NAMES_L[m]} ${y} — ${loc}</span></div>
+      <div class="cal-grid">
+        ${DAY_ABBR_L.map(d=>`<div class="cal-dow">${d}</div>`).join('')}`;
+    for(let i=0;i<firstDow;i++) html+=`<div class="cal-day empty"></div>`;
+    for(let day=1;day<=dim;day++){
+      const ds=`${y}-${String(m+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+      const inR = ds>=p.start && ds<=p.end;
+      const isTod = ds===today;
+      let cls='cal-day'; if(!inR)cls+=' outrange'; if(isTod)cls+=' is-today';
+
+      let chip='';
+      if(inR){
+        const staffHere = state.employees.filter((_,ei)=>getAssign(ds,ei)===loc);
+        if(staffHere.length>0){
+          chip = staffHere.map(name=>{
+            const initials2 = name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+            return `<div class="cal-chip" style="background:${s.bg};color:${s.fg};margin-bottom:1px" title="${name}">${initials2}</div>`;
+          }).join('');
+        } else {
+          chip = `<div style="font-size:.6rem;color:#ccc;margin-top:2px">—</div>`;
+        }
+      }
+      html += `<div class="${cls}"><div class="cal-num">${day}</div>${chip}</div>`;
+    }
+    const trail=(7-(firstDow+dim)%7)%7;
+    for(let i=0;i<trail;i++) html+=`<div class="cal-day empty"></div>`;
+    html+='</div></div>';
+  });
+
+  // Day-by-day list
+  html += `<div class="card"><div class="card-head"><h2>Day-by-day staffing at ${loc}</h2></div>
+    <div style="padding:0"><table><thead><tr><th>Date</th><th>Day</th><th>Staff assigned</th><th>#</th></tr></thead><tbody>
+    ${dates.map(d=>{
+      const staffHere = state.employees.filter((_,ei)=>getAssign(d,ei)===loc);
+      const names = staffHere.length>0 ? staffHere.map(n=>`<span class="chip" style="background:${s.bg};color:${s.fg};margin:1px">${n}</span>`).join(' ') : '<span style="color:var(--muted);font-size:.75rem">Nobody assigned</span>';
+      return `<tr>
+        <td style="font-weight:500">${parseDate(d).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}</td>
+        <td style="color:var(--muted)">${DAY_ABBR_L[parseDate(d).getDay()]}</td>
+        <td>${names}</td>
+        <td style="text-align:center;font-weight:700;color:${staffHere.length>0?s.fg:'var(--muted)'}">${staffHere.length}</td>
+      </tr>`;
+    }).join('')}
+    </tbody></table></div></div>`;
+
+  document.getElementById('location-content').innerHTML=html;
+}
+
 </script>
 </body>
 </html>
