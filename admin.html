@@ -107,7 +107,7 @@ select.cell-sel{border:none;padding:2px 4px;font-size:.75rem;font-weight:600;bor
 <header>
   <div>
     <h1>&#9881;&#65039; Admin Panel &mdash; Staff Schedule</h1>
-    <p><span class="live-dot"></span>Live sync via Firebase &middot; Max 6 days/week &middot; 29 Jun 2025</p>
+    <p><span class="live-dot"></span>Live sync via Firebase &middot; Max 6 days/week &middot; 29 Jun 2026</p>
   </div>
   <div class="hbtns">
     <span class="hbadge">Admin</span>
@@ -204,13 +204,14 @@ if(sessionStorage.getItem(SESSION_KEY)==='1'){
 }
 
 // ── Constants ────────────────────────────────────────────────────────────────
-const LOCS=["KHBP","AYC Morning","AYC Night","Mobile Lab","Outreach","Day Off"];
+const LOCS=["KHBP","AYC Morning","AYC Night","Mobile Lab","Outreach","Aqaba","Day Off"];
 const LOC_STYLE={
   "KHBP":       {bg:"#D6E8F7",fg:"#0D3F6E"},
   "AYC Morning":{bg:"#D5F0E5",fg:"#084D37"},
   "AYC Night":  {bg:"#E9E5FC",fg:"#31216B"},
   "Mobile Lab": {bg:"#FDEECE",fg:"#6B3E00"},
   "Outreach":   {bg:"#FDE0EB",fg:"#6B162F"},
+  "Aqaba":      {bg:"#FFF3CD",fg:"#664D03"},
   "Day Off":    {bg:"#F0F0EE",fg:"#888"},
 };
 const MIN_STAFF={"KHBP":2,"AYC Morning":1,"AYC Night":1,"Mobile Lab":2};
@@ -222,7 +223,7 @@ let state = {
              "Ahmad Shwayat","Ahmad Abu Ghazaleh","Momen Kamal","Ahmad Abu Slayeh",
              "Ismail Qashoue","Ahmad Fares","Murad Saadeh"],
   schedule:{},
-  periods:[{label:"29 Jun – 1 Aug 2025",start:"2025-06-29",end:"2025-08-01"}]
+  periods:[{label:"29 Jun – 1 Aug 2026",start:"2026-06-28",end:"2025-08-01"}]
 };
 let fbReady = false;
 let saveTimer = null;
@@ -237,10 +238,11 @@ function setSyncStatus(s){
 
 function saveToFirebase(){
   setSyncStatus('saving');
+  window._localSaveTs = Date.now();
   clearTimeout(saveTimer);
   saveTimer = setTimeout(()=>{
     set(schedRef, state)
-      .then(()=>setSyncStatus('ok'))
+      .then(()=>{ window._localSaveTs = Date.now(); setSyncStatus('ok'); })
       .catch(()=>setSyncStatus('err'));
   }, 600);
 }
@@ -250,7 +252,7 @@ function startFirebase(){
     const data = snapshot.val();
     if(data){
       state = data;
-      if(!state.periods) state.periods=[{label:"29 Jun – 1 Aug 2025",start:"2025-06-29",end:"2025-08-01"}];
+      if(!state.periods) state.periods=[{label:"29 Jun – 1 Aug 2026",start:"2026-06-28",end:"2025-08-01"}];
       if(!state.schedule) state.schedule={};
     }
     if(!fbReady){
@@ -293,8 +295,9 @@ window.showTab = function(name,btn){
 function syncSels(){
   ['period-sel','brief-period-sel','sum-period-sel'].forEach(id=>{
     const s=document.getElementById(id);if(!s)return;
-    const v=s.value;s.innerHTML=state.periods.map((p,i)=>`<option value="${i}">${p.label}</option>`).join('');
-    if(v<state.periods.length)s.value=v;
+    const v=parseInt(s.value)||0;
+    s.innerHTML=state.periods.map((p,i)=>`<option value="${i}">${p.label}</option>`).join('');
+    s.value = Math.min(v, state.periods.length-1);
   });
 }
 function curPeriod(id){const i=parseInt(document.getElementById(id)?.value||0);return state.periods[i]||state.periods[0];}
@@ -302,14 +305,24 @@ function curPeriod(id){const i=parseInt(document.getElementById(id)?.value||0);r
 // ── Add month ────────────────────────────────────────────────────────────────
 window.addMonth = function(){
   const last=state.periods[state.periods.length-1];
-  const after=new Date(last.end+'T00:00:00');after.setDate(after.getDate()+1);
+  // Start the new period the day after the last period ends
+  const after=new Date(last.end+'T00:00:00');
+  after.setDate(after.getDate()+1);
+  // End = last day of that same month
   const end=new Date(after.getFullYear(),after.getMonth()+1,0);
   const s=fmtDate(after),e=fmtDate(end);
   const label=`${after.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})} – ${end.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}`;
   state.periods.push({label,start:s,end:e});
-  saveToFirebase();syncSels();
-  document.getElementById('period-sel').value=state.periods.length-1;
-  renderSchedule();toast('Month added.');
+  const newIdx=state.periods.length-1;
+  saveToFirebase();
+  // Sync ALL period selectors and force them to show the new month
+  ['period-sel','brief-period-sel','sum-period-sel'].forEach(id=>{
+    const s=document.getElementById(id);if(!s)return;
+    s.innerHTML=state.periods.map((p,i)=>`<option value="${i}">${p.label}</option>`).join('');
+    s.value=newIdx;
+  });
+  renderSchedule();
+  toast('Month added: '+label);
 };
 
 // ── Names ────────────────────────────────────────────────────────────────────
