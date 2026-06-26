@@ -137,6 +137,8 @@ select.cell-sel{border:none;padding:2px 4px;font-size:.75rem;font-weight:600;bor
       <label>Period:</label>
       <select id="period-sel" onchange="renderSchedule()"></select>
       <button class="btn btn-sm btn-primary" onclick="addMonth()">+ Add month</button>
+      <button class="btn btn-sm btn-danger" onclick="deletePeriod()">🗑 Delete period</button>
+      <button class="btn btn-sm" style="margin-left:auto;border-color:#FCA5A5;color:#991B1B" onclick="resetAll()">⚠ Reset all data</button>
     </div>
     <div class="legend" id="sched-legend"></div>
     <div class="card"><div class="card-body" style="padding:0"><div class="tbl-wrap" id="sched-wrap"></div></div></div>
@@ -211,7 +213,7 @@ const LOC_STYLE={
   "AYC Night":  {bg:"#E9E5FC",fg:"#31216B"},
   "Mobile Lab": {bg:"#FDEECE",fg:"#6B3E00"},
   "Outreach":   {bg:"#FDE0EB",fg:"#6B162F"},
-  "Aqaba":      {bg:"#FFF3CD",fg:"#664D03"},
+  "Aqaba":      {bg:"#CFF4F4",fg:"#055160"},
   "Day Off":    {bg:"#F0F0EE",fg:"#888"},
 };
 const MIN_STAFF={"KHBP":2,"AYC Morning":1,"AYC Night":1,"Mobile Lab":2};
@@ -223,7 +225,7 @@ let state = {
              "Ahmad Shwayat","Ahmad Abu Ghazaleh","Momen Kamal","Ahmad Abu Slayeh",
              "Ismail Qashoue","Ahmad Fares","Murad Saadeh"],
   schedule:{},
-  periods:[{label:"29 Jun – 1 Aug 2026",start:"2026-06-28",end:"2025-08-01"}]
+  periods:[{label:"28 Jun – 31 Jul 2026",start:"2026-06-28",end:"2026-07-31"}]
 };
 let fbReady = false;
 let saveTimer = null;
@@ -252,7 +254,7 @@ function startFirebase(){
     const data = snapshot.val();
     if(data){
       state = data;
-      if(!state.periods) state.periods=[{label:"29 Jun – 1 Aug 2026",start:"2026-06-28",end:"2025-08-01"}];
+      if(!state.periods) state.periods=[{label:"28 Jun – 31 Jul 2026",start:"2026-06-28",end:"2026-07-31"}];
       if(!state.schedule) state.schedule={};
     }
     if(!fbReady){
@@ -293,36 +295,100 @@ window.showTab = function(name,btn){
   ({names:renderNames,schedule:()=>{syncSels();renderSchedule()},brief:()=>{syncSels();renderBrief()},summary:()=>{syncSels();renderSummary()}})[name]?.();
 };
 function syncSels(){
+  if(!state || !state.periods) return;
   ['period-sel','brief-period-sel','sum-period-sel'].forEach(id=>{
     const s=document.getElementById(id);if(!s)return;
     const v=parseInt(s.value)||0;
     s.innerHTML=state.periods.map((p,i)=>`<option value="${i}">${p.label}</option>`).join('');
-    s.value = Math.min(v, state.periods.length-1);
+    s.value = String(Math.min(Math.max(v,0), state.periods.length-1));
   });
 }
 function curPeriod(id){const i=parseInt(document.getElementById(id)?.value||0);return state.periods[i]||state.periods[0];}
 
 // ── Add month ────────────────────────────────────────────────────────────────
+// Helper: build a period spanning a full calendar month
+function makeMonthPeriod(year, monthIdx){
+  // monthIdx is 0-based: 0=Jan, 11=Dec
+  const startDate = new Date(year, monthIdx, 1);
+  const endDate = new Date(year, monthIdx+1, 0); // last day of month
+  const startStr = fmtDate(startDate);
+  const endStr = fmtDate(endDate);
+  const label = `${startDate.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})} – ${endDate.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}`;
+  return {label, start:startStr, end:endStr};
+}
+
 window.addMonth = function(){
-  const last=state.periods[state.periods.length-1];
-  // Start the new period the day after the last period ends
-  const after=new Date(last.end+'T00:00:00');
-  after.setDate(after.getDate()+1);
-  // End = last day of that same month
-  const end=new Date(after.getFullYear(),after.getMonth()+1,0);
-  const s=fmtDate(after),e=fmtDate(end);
-  const label=`${after.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})} – ${end.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}`;
-  state.periods.push({label,start:s,end:e});
-  const newIdx=state.periods.length-1;
+  if(!state.periods || state.periods.length===0){
+    state.periods = [makeMonthPeriod(2026, 5)]; // June 2026 default
+  }
+  const last = state.periods[state.periods.length-1];
+  // Parse the last period's end date and find the next calendar month
+  const lastEnd = new Date(last.end+'T00:00:00');
+  let nextYear = lastEnd.getFullYear();
+  let nextMonth = lastEnd.getMonth() + 1; // next month after last end's month
+  // If last end is on the very last day of its month, we want the FOLLOWING month
+  // (e.g. last end Jul 31 → new period = Aug)
+  // If last end is mid-month (shouldn't happen but safe), still go to next month
+  if(nextMonth > 11){ nextMonth = 0; nextYear++; }
+  const newPeriod = makeMonthPeriod(nextYear, nextMonth);
+  state.periods.push(newPeriod);
+  const newIdx = state.periods.length-1;
   saveToFirebase();
-  // Sync ALL period selectors and force them to show the new month
+  // Force all period dropdowns to refresh and show the new month
   ['period-sel','brief-period-sel','sum-period-sel'].forEach(id=>{
-    const s=document.getElementById(id);if(!s)return;
-    s.innerHTML=state.periods.map((p,i)=>`<option value="${i}">${p.label}</option>`).join('');
-    s.value=newIdx;
+    const s=document.getElementById(id); if(!s) return;
+    s.innerHTML = state.periods.map((p,i)=>`<option value="${i}">${p.label}</option>`).join('');
+    s.value = String(newIdx);
   });
   renderSchedule();
-  toast('Month added: '+label);
+  toast('Added: '+newPeriod.label);
+};
+
+window.deletePeriod = function(){
+  if(state.periods.length <= 1){
+    toast('Cannot delete the last remaining period', true);
+    return;
+  }
+  const sel = document.getElementById('period-sel');
+  const idx = parseInt(sel.value) || 0;
+  const p = state.periods[idx];
+  if(!confirm(`Delete period "${p.label}"? Any schedule data for these dates will also be removed.`)) return;
+  // Remove the period
+  state.periods.splice(idx, 1);
+  // Remove schedule entries for those dates
+  const datesToRemove = dateRange(p.start, p.end);
+  datesToRemove.forEach(d=>{
+    Object.keys(state.schedule).forEach(k=>{
+      if(k.startsWith(d+':')) delete state.schedule[k];
+    });
+  });
+  saveToFirebase();
+  ['period-sel','brief-period-sel','sum-period-sel'].forEach(id=>{
+    const s=document.getElementById(id); if(!s) return;
+    s.innerHTML = state.periods.map((p,i)=>`<option value="${i}">${p.label}</option>`).join('');
+    s.value = '0';
+  });
+  renderSchedule();
+  toast('Deleted: '+p.label);
+};
+
+window.resetAll = function(){
+  if(!confirm('⚠ This will WIPE all schedule data and reset to the default June 2026 period. Continue?')) return;
+  if(!confirm('Are you ABSOLUTELY sure? This cannot be undone.')) return;
+  state = {
+    employees: state.employees || ["Ala'a Janbak","Mohammed Hinti","Bashar Al-zubi","Ghadeer AbuRashed","Ahmad Shwayat","Ahmad Abu Ghazaleh","Momen Kamal","Ahmad Abu Slayeh","Ismail Qashoue","Ahmad Fares","Murad Saadeh"],
+    schedule: {},
+    periods: [makeMonthPeriod(2026, 5)] // June 2026
+  };
+  saveToFirebase();
+  ['period-sel','brief-period-sel','sum-period-sel'].forEach(id=>{
+    const s=document.getElementById(id); if(!s) return;
+    s.innerHTML = state.periods.map((p,i)=>`<option value="${i}">${p.label}</option>`).join('');
+    s.value = '0';
+  });
+  renderNames();
+  renderSchedule();
+  toast('Reset complete. Fresh June 2026 period created.');
 };
 
 // ── Names ────────────────────────────────────────────────────────────────────
