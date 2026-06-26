@@ -163,12 +163,26 @@ onValue(schedRef,(snapshot)=>{
   setInfoBar('err','&#9888; Connection error. Please refresh.');
 });
 
-function fmtDate(d){return d.toISOString().slice(0,10)}
+function fmtDate(d){
+  const y=d.getFullYear();
+  const m=String(d.getMonth()+1).padStart(2,'0');
+  const dd=String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${dd}`;
+}
 function parseDate(s){return new Date(s+'T00:00:00')}
 function isSun(s){return parseDate(s).getDay()===0}
 function dowName(s){return DAY_ABBR[parseDate(s).getDay()]}
 function dayNum(s){return parseInt(s.slice(8))}
-function dateRange(s,e){const a=[];let d=new Date(s+'T00:00:00');const end=new Date(e+'T00:00:00');while(d<=end){a.push(fmtDate(d));d=new Date(d.getTime()+86400000);}return a;}
+function dateRange(s,e){
+  const a=[];
+  let d=new Date(s+'T00:00:00');
+  const end=new Date(e+'T00:00:00');
+  while(d<=end){
+    a.push(fmtDate(d));
+    d=new Date(d.getFullYear(), d.getMonth(), d.getDate()+1);
+  }
+  return a;
+}
 function toWeeks(dates){const w=[];let wk=[];for(const d of dates){if(isSun(d)&&wk.length){w.push(wk);wk=[];}wk.push(d);}if(wk.length)w.push(wk);return w;}
 function getAssign(date,ei){if(!state)return 'Day Off';return state.schedule[`${date}:${ei}`]||'Day Off';}
 function initials(n){return n.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();}
@@ -411,6 +425,12 @@ function renderLocation(){
 
   document.getElementById('location-content').innerHTML=html;
 }
+
+
+// Expose render functions globally so inline onchange handlers can call them
+window.renderFull = renderFull;
+window.renderPersonal = renderPersonal;
+if (typeof renderLocation !== 'undefined') window.renderLocation = renderLocation;
 
 </script>
 </body>
