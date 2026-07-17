@@ -142,6 +142,10 @@ const LOC_STYLE={
 const DAY_ABBR=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 const MONTH_NAMES=["January","February","March","April","May","June","July","August","September","October","November","December"];
 let state=null; let selEmp=0;
+// Backward compat: employees may be strings OR {name,email} objects
+function empName(emp){ return typeof emp === 'string' ? emp : (emp?.name || ''); }
+function getNote(date, ei){ return (state?.notes || {})[`${date}:${ei}`] || ''; }
+
 
 function setInfoBar(type,msg){
   const b=document.getElementById('info-bar');
@@ -152,7 +156,7 @@ onValue(schedRef,(snapshot)=>{
   const data=snapshot.val();
   if(data){
     state=data;
-    if(!state.periods)state.periods=[{label:"28 Jun – 31 Jul 2026",start:"2026-06-28",end:"2026-07-31"}];
+    if(!state.periods)state.periods=[{label:"1 Jul – 31 Jul 2026",start:"2026-07-01",end:"2026-07-31"}];
     setInfoBar('live','<span class="live-dot"></span> Live schedule &mdash; last updated by admin');
     syncSels();
     renderActive();
@@ -232,10 +236,14 @@ function renderFull(){
   hdr+='</tr>';
   let tbody='';
   for(let ei=0;ei<N;ei++){
-    tbody+=`<tr><td class="name-cell">${state.employees[ei]}</td>`;
+    tbody+=`<tr><td class="name-cell">${empName(state.employees[ei])}</td>`;
     weeks.forEach(wk=>wk.forEach(d=>{
       const a=getAssign(d,ei);const s=LOC_STYLE[a]||LOC_STYLE["Day Off"];
-      tbody+=`<td style="text-align:center;background:${s.bg}"><span class="chip" style="background:${s.bg};color:${s.fg}">${a==='Day Off'?'Off':a.replace(' Morning',' AM').replace(' Night',' PM').replace('Mobile Lab','Mob.')}</span></td>`;
+      const nt=getNote(d,ei);
+      const noteBadge = nt
+        ? `<div title="${nt.replace(/"/g,'&quot;')}" style="font-size:.62rem;font-weight:600;color:#5A3800;background:#FFF3CD;border-radius:3px;padding:1px 4px;margin-top:2px;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%">📌 ${nt.slice(0,10)}${nt.length>10?'…':''}</div>`
+        : '';
+      tbody+=`<td style="text-align:center;background:${s.bg};min-width:75px;padding:4px"><span class="chip" style="background:${s.bg};color:${s.fg}">${a==='Day Off'?'Off':a.replace(' Morning',' AM').replace(' Night',' PM').replace('Mobile Lab','Mob.')}</span>${noteBadge}</td>`;
     }));
     tbody+='</tr>';
   }
@@ -244,17 +252,19 @@ function renderFull(){
 
 function renderEmpPicker(){
   if(!state){document.getElementById('emp-picker').innerHTML='';return;}
-  document.getElementById('emp-picker').innerHTML=state.employees.map((n,i)=>`
-    <div class="emp-card ${selEmp===i?'active':''}" onclick="selEmpFn(${i})">
+  document.getElementById('emp-picker').innerHTML=state.employees.map((e,i)=>{
+    const n = empName(e);
+    return `<div class="emp-card ${selEmp===i?'active':''}" onclick="selEmpFn(${i})">
       <div class="emp-init">${initials(n)}</div>
       <div class="emp-label">${n}</div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 window.selEmpFn = function(i){selEmp=i;renderEmpPicker();renderPersonal();};
 
 function renderPersonal(){
   if(!state){document.getElementById('personal-content').innerHTML='<div class="no-data">Loading...</div>';return;}
-  const emp=state.employees[selEmp];
+  const emp=empName(state.employees[selEmp]);
   const p=curPeriod('pers-psel');
   const dates=dateRange(p.start,p.end);
   const today=fmtDate(new Date());
@@ -299,7 +309,9 @@ function renderPersonal(){
       let cls='cal-day';if(!inR)cls+=' outrange';if(isTod)cls+=' is-today';
       let chip='';
       if(inR){const a=getAssign(ds,selEmp);const s=LOC_STYLE[a]||LOC_STYLE["Day Off"];
-        if(a!=='Day Off')chip=`<div class="cal-chip" style="background:${s.bg};color:${s.fg}">${a.replace(' Morning',' AM').replace(' Night',' PM')}</div>`;}
+        const note=getNote(ds,selEmp);
+        if(a!=='Day Off') chip=`<div class="cal-chip" style="background:${s.bg};color:${s.fg}">${a.replace(' Morning',' AM').replace(' Night',' PM')}</div>`;
+        if(note) chip+=`<div class="cal-chip" style="background:#FFF8DB;color:#5A3800;font-size:.6rem;margin-top:1px" title="${note.replace(/"/g,'&quot;')}">📌 ${note.slice(0,14)}${note.length>14?'…':''}</div>`;}
       html+=`<div class="${cls}"><div class="cal-num">${day}</div>${chip}</div>`;
     }
     const trail=(7-(firstDow+dim)%7)%7;
@@ -310,9 +322,10 @@ function renderPersonal(){
   html+=`<div class="card"><div class="card-head"><h2>Day-by-day</h2></div>
     <div style="padding:0"><table><thead><tr><th>Date</th><th>Day</th><th>Assignment</th></tr></thead><tbody>
     ${dates.map(d=>{const a=getAssign(d,selEmp);const s=LOC_STYLE[a]||LOC_STYLE["Day Off"];
+      const noteHtml = getNote(d,selEmp) ? `<div style="font-size:.72rem;color:#7C4A00;margin-top:2px;padding:2px 6px;background:#FFF8DB;border-radius:3px;display:inline-block">📌 ${getNote(d,selEmp)}</div>` : '';
       return `<tr><td style="font-weight:500">${parseDate(d).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}</td>
         <td style="color:var(--muted)">${dowName(d)}</td>
-        <td><span class="chip" style="background:${s.bg};color:${s.fg}">${a}</span></td></tr>`;}).join('')}
+        <td><span class="chip" style="background:${s.bg};color:${s.fg}">${a}</span>${noteHtml}</td></tr>`;}).join('')}
     </tbody></table></div></div>`;
 
   document.getElementById('personal-content').innerHTML=html;
@@ -350,7 +363,7 @@ function renderLocation(){
 
   // Count total assignments
   const totalAssignments = dates.reduce((sum,d)=>{
-    return sum + state.employees.filter((_,ei)=>getAssign(d,ei)===loc).length;
+    return sum + state.employees.map((e,ei)=>ei).filter(ei=>getAssign(d,ei)===loc).length;
   },0);
 
   let html = `<div style="display:flex;align-items:center;gap:12px;margin-bottom:1.25rem">
@@ -393,7 +406,7 @@ function renderLocation(){
       if(inR){
         const staffHere = state.employees.filter((_,ei)=>getAssign(ds,ei)===loc);
         if(staffHere.length>0){
-          chip = staffHere.map(name=>{
+          chip = staffHere.map(({name})=>{
             const initials2 = name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
             return `<div class="cal-chip" style="background:${s.bg};color:${s.fg};margin-bottom:1px" title="${name}">${initials2}</div>`;
           }).join('');
@@ -412,8 +425,8 @@ function renderLocation(){
   html += `<div class="card"><div class="card-head"><h2>Day-by-day staffing at ${loc}</h2></div>
     <div style="padding:0"><table><thead><tr><th>Date</th><th>Day</th><th>Staff assigned</th><th>#</th></tr></thead><tbody>
     ${dates.map(d=>{
-      const staffHere = state.employees.filter((_,ei)=>getAssign(d,ei)===loc);
-      const names = staffHere.length>0 ? staffHere.map(n=>`<span class="chip" style="background:${s.bg};color:${s.fg};margin:1px">${n}</span>`).join(' ') : '<span style="color:var(--muted);font-size:.75rem">Nobody assigned</span>';
+      const staffHere = state.employees.map((e,ei)=>({name:empName(e),ei})).filter(({ei})=>getAssign(d,ei)===loc);
+      const names = staffHere.length>0 ? staffHere.map(({name})=>`<span class="chip" style="background:${s.bg};color:${s.fg};margin:1px">${name}</span>`).join(' ') : '<span style="color:var(--muted);font-size:.75rem">Nobody assigned</span>';
       return `<tr>
         <td style="font-weight:500">${parseDate(d).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}</td>
         <td style="color:var(--muted)">${DAY_ABBR_L[parseDate(d).getDay()]}</td>
