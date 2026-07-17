@@ -126,8 +126,8 @@ select.cell-sel{border:none;padding:2px 4px;font-size:.75rem;font-weight:600;bor
   <div id="tab-names" class="section active">
     <div class="card">
       <div class="card-head"><h2>Employees</h2><button class="btn btn-primary" onclick="openAddEmp()">+ Add</button></div>
-      <div class="card-body"><table style="max-width:480px">
-        <thead><tr><th style="width:36px">#</th><th class="name-hd">Name</th><th style="width:90px">Actions</th></tr></thead>
+      <div class="card-body"><table style="max-width:720px">
+        <thead><tr><th style="width:36px">#</th><th class="name-hd">Name</th><th class="name-hd">Email</th><th style="width:90px">Actions</th></tr></thead>
         <tbody id="names-tbody"></tbody>
       </table></div>
     </div>
@@ -138,7 +138,34 @@ select.cell-sel{border:none;padding:2px 4px;font-size:.75rem;font-weight:600;bor
       <select id="period-sel" onchange="renderSchedule()"></select>
       <button class="btn btn-sm btn-primary" onclick="addMonth()">+ Add month</button>
       <button class="btn btn-sm btn-danger" onclick="deletePeriod()">🗑 Delete period</button>
-      <button class="btn btn-sm" style="margin-left:auto;border-color:#FCA5A5;color:#991B1B" onclick="resetAll()">⚠ Reset all data</button>
+      <button style="margin-left:auto;background:#0D5CAB;border:none;color:#fff;padding:8px 18px;border-radius:6px;font-size:.9rem;cursor:pointer;font-family:inherit;font-weight:600;box-shadow:0 2px 4px rgba(13,92,171,.25)" onclick="notifyStaff()">📧 Notify staff by email</button>
+      <button class="btn btn-sm" style="border-color:#FCA5A5;color:#991B1B" onclick="resetAll()">⚠ Reset all data</button>
+    </div>
+
+    <!-- Bulk assign panel -->
+    <div style="background:#fff;border:1px solid var(--border);border-radius:8px;padding:12px 16px;margin-bottom:14px">
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <strong style="font-size:.85rem;color:var(--navy)">⚡ Bulk assign:</strong>
+        <select id="bulk-emp" style="min-width:160px"><option value="">-- All employees --</option></select>
+        <select id="bulk-loc" style="min-width:130px"></select>
+        <label style="font-size:.8rem;color:var(--muted)">From</label>
+        <input type="date" id="bulk-from" style="padding:5px 8px;border:1px solid var(--border);border-radius:6px;font-size:.82rem">
+        <label style="font-size:.8rem;color:var(--muted)">To</label>
+        <input type="date" id="bulk-to" style="padding:5px 8px;border:1px solid var(--border);border-radius:6px;font-size:.82rem">
+        <button class="btn btn-sm btn-primary" onclick="bulkApply()">Apply</button>
+        <span id="bulk-status" style="font-size:.75rem;color:var(--muted)"></span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap">
+        <span style="font-size:.75rem;color:var(--muted)">Skip these days:</span>
+        <label style="font-size:.75rem;display:flex;align-items:center;gap:3px;cursor:pointer"><input type="checkbox" class="bulk-skip" value="0"> Sun</label>
+        <label style="font-size:.75rem;display:flex;align-items:center;gap:3px;cursor:pointer"><input type="checkbox" class="bulk-skip" value="1"> Mon</label>
+        <label style="font-size:.75rem;display:flex;align-items:center;gap:3px;cursor:pointer"><input type="checkbox" class="bulk-skip" value="2"> Tue</label>
+        <label style="font-size:.75rem;display:flex;align-items:center;gap:3px;cursor:pointer"><input type="checkbox" class="bulk-skip" value="3"> Wed</label>
+        <label style="font-size:.75rem;display:flex;align-items:center;gap:3px;cursor:pointer"><input type="checkbox" class="bulk-skip" value="4"> Thu</label>
+        <label style="font-size:.75rem;display:flex;align-items:center;gap:3px;cursor:pointer"><input type="checkbox" class="bulk-skip" value="5"> Fri</label>
+        <label style="font-size:.75rem;display:flex;align-items:center;gap:3px;cursor:pointer"><input type="checkbox" class="bulk-skip" value="6"> Sat</label>
+      </div>
+      <div style="font-size:.72rem;color:var(--muted);margin-top:6px">Tip: pick employee, location, date range, tick any days to skip, then Apply. Overwrites existing assignments in that range (except skipped days).</div>
     </div>
     <div class="legend" id="sched-legend"></div>
     <div class="card"><div class="card-body" style="padding:0"><div class="tbl-wrap" id="sched-wrap"></div></div></div>
@@ -159,6 +186,9 @@ select.cell-sel{border:none;padding:2px 4px;font-size:.75rem;font-weight:600;bor
 <div id="modal-root"></div>
 <div class="toast" id="toast"></div>
 
+<!-- EmailJS SDK (v3) -->
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+
 <!-- Firebase -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
@@ -173,6 +203,21 @@ const firebaseConfig = {
   messagingSenderId: "1012535086057",
   appId: "1:1012535086057:web:619438ffe3dc3c3dd55978"
 };
+
+
+// ══════════════════════════════════════════════════════════════════════════════
+// EMAILJS CONFIG — fill these in after signing up at emailjs.com
+// ══════════════════════════════════════════════════════════════════════════════
+const EMAILJS_CONFIG = {
+  publicKey:  'OjGr7k1SNyAdV5CUn',      // set from EmailJS dashboard
+  serviceId:  'service_q3bhk4a',        // set from EmailJS dashboard
+  templateId: 'template_dmnossn',       // set from EmailJS dashboard
+  scheduleUrl:'https://YOUR-USERNAME.github.io/YOUR-REPO/staff.html'
+};
+// Init EmailJS if credentials look filled in
+if(typeof emailjs !== 'undefined' && EMAILJS_CONFIG.publicKey !== 'YOUR_PUBLIC_KEY_HERE'){
+  try { emailjs.init({publicKey: EMAILJS_CONFIG.publicKey}); } catch(e){ console.warn('EmailJS init failed:', e); }
+}
 
 const fbApp = initializeApp(firebaseConfig);
 const db = getDatabase(fbApp);
@@ -221,14 +266,37 @@ const DAY_ABBR=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 
 // ── State ─────────────────────────────────────────────────────────────────────
 let state = {
-  employees:["Ala'a Janbak","Mohammed Hinti","Bashar Al-zubi","Ghadeer AbuRashed",
-             "Ahmad Shwayat","Ahmad Abu Ghazaleh","Momen Kamal","Ahmad Abu Slayeh",
-             "Ismail Qashoue","Ahmad Fares","Murad Saadeh"],
+  employees:[
+    {name:"Ala'a Janbak",email:""},{name:"Mohammed Hinti",email:""},
+    {name:"Bashar Al-zubi",email:""},{name:"Ghadeer AbuRashed",email:""},
+    {name:"Ahmad Shwayat",email:""},{name:"Ahmad Abu Ghazaleh",email:""},
+    {name:"Momen Kamal",email:""},{name:"Ahmad Abu Slayeh",email:""},
+    {name:"Ismail Qashoue",email:""},{name:"Ahmad Fares",email:""},
+    {name:"Murad Saadeh",email:""}
+  ],
   schedule:{},
-  periods:[{label:"28 Jun – 31 Jul 2026",start:"2026-06-28",end:"2026-07-31"}]
+  periods:[{label:"1 Jul – 31 Jul 2026",start:"2026-07-01",end:"2026-07-31"}]
 };
 let fbReady = false;
 let saveTimer = null;
+
+// ─── Employee shape helpers (backward compatible with string arrays) ─────────
+function empName(emp){ return typeof emp === 'string' ? emp : (emp?.name || ''); }
+function empEmail(emp){ return typeof emp === 'string' ? '' : (emp?.email || ''); }
+function normalizeEmployees(){
+  if(!state.employees) state.employees = [];
+  state.employees = state.employees.map(e => typeof e === 'string' ? {name:e, email:''} : e);
+}
+
+// ─── Notes helpers ───────────────────────────────────────────────────────────
+function getNote(date, ei){ return (state.notes || {})[`${date}:${ei}`] || ''; }
+function setNote(date, ei, txt){
+  if(!state.notes) state.notes = {};
+  const trimmed = (txt || '').trim();
+  if(trimmed) state.notes[`${date}:${ei}`] = trimmed;
+  else delete state.notes[`${date}:${ei}`];
+  saveToFirebase();
+}
 
 function setSyncStatus(s){
   const el=document.getElementById('sync-status');
@@ -254,8 +322,10 @@ function startFirebase(){
     const data = snapshot.val();
     if(data){
       state = data;
-      if(!state.periods) state.periods=[{label:"28 Jun – 31 Jul 2026",start:"2026-06-28",end:"2026-07-31"}];
+      if(!state.periods) state.periods=[{label:"1 Jul – 31 Jul 2026",start:"2026-07-01",end:"2026-07-31"}];
       if(!state.schedule) state.schedule={};
+      if(!state.notes) state.notes={};
+      normalizeEmployees();
     }
     if(!fbReady){
       fbReady=true;
@@ -333,7 +403,7 @@ function makeMonthPeriod(year, monthIdx){
 
 window.addMonth = function(){
   if(!state.periods || state.periods.length===0){
-    state.periods = [makeMonthPeriod(2026, 5)]; // June 2026 default
+    state.periods = [makeMonthPeriod(2026, 6)]; // July 2026 default
   }
   const last = state.periods[state.periods.length-1];
   // Parse the last period's end date and find the next calendar month
@@ -371,9 +441,13 @@ window.deletePeriod = function(){
   state.periods.splice(idx, 1);
   // Remove schedule entries for those dates
   const datesToRemove = dateRange(p.start, p.end);
+  if(!state.notes) state.notes = {};
   datesToRemove.forEach(d=>{
     Object.keys(state.schedule).forEach(k=>{
       if(k.startsWith(d+':')) delete state.schedule[k];
+    });
+    Object.keys(state.notes).forEach(k=>{
+      if(k.startsWith(d+':')) delete state.notes[k];
     });
   });
   saveToFirebase();
@@ -390,9 +464,17 @@ window.resetAll = function(){
   if(!confirm('⚠ This will WIPE all schedule data and reset to the default June 2026 period. Continue?')) return;
   if(!confirm('Are you ABSOLUTELY sure? This cannot be undone.')) return;
   state = {
-    employees: state.employees || ["Ala'a Janbak","Mohammed Hinti","Bashar Al-zubi","Ghadeer AbuRashed","Ahmad Shwayat","Ahmad Abu Ghazaleh","Momen Kamal","Ahmad Abu Slayeh","Ismail Qashoue","Ahmad Fares","Murad Saadeh"],
+    employees: state.employees || [
+      {name:"Ala'a Janbak",email:""},{name:"Mohammed Hinti",email:""},
+      {name:"Bashar Al-zubi",email:""},{name:"Ghadeer AbuRashed",email:""},
+      {name:"Ahmad Shwayat",email:""},{name:"Ahmad Abu Ghazaleh",email:""},
+      {name:"Momen Kamal",email:""},{name:"Ahmad Abu Slayeh",email:""},
+      {name:"Ismail Qashoue",email:""},{name:"Ahmad Fares",email:""},
+      {name:"Murad Saadeh",email:""}
+    ],
     schedule: {},
-    periods: [makeMonthPeriod(2026, 5)] // June 2026
+    notes: {},
+    periods: [makeMonthPeriod(2026, 6)] // July 2026
   };
   saveToFirebase();
   ['period-sel','brief-period-sel','sum-period-sel'].forEach(id=>{
@@ -407,18 +489,64 @@ window.resetAll = function(){
 
 // ── Names ────────────────────────────────────────────────────────────────────
 function renderNames(){
-  document.getElementById('names-tbody').innerHTML=state.employees.map((n,i)=>`
-    <tr><td style="text-align:center;color:var(--muted)">${i+1}</td><td>${n}</td>
-    <td style="text-align:center"><button class="btn btn-sm" onclick="editEmp(${i})">&#9999;&#65039;</button> <button class="btn btn-sm btn-danger" onclick="delEmp(${i})">&#128465;</button></td></tr>`).join('');
+  const tbody = document.getElementById('names-tbody');
+  const head = document.querySelector('#names-tbody')?.previousElementSibling;
+  // Update header to show Email column
+  if(head && head.tagName === 'THEAD'){
+    head.innerHTML = '<tr><th style="width:36px">#</th><th class="name-hd">Name</th><th class="name-hd">Email</th><th style="width:90px">Actions</th></tr>';
+  }
+  tbody.innerHTML = state.employees.map((emp,i) => {
+    const name = empName(emp);
+    const email = empEmail(emp);
+    const emailDisplay = email
+      ? `<span style="font-size:.75rem;color:var(--text)">${email}</span>`
+      : `<span style="font-size:.72rem;color:#DC2626;font-style:italic">missing</span>`;
+    return `<tr>
+      <td style="text-align:center;color:var(--muted)">${i+1}</td>
+      <td>${name}</td>
+      <td>${emailDisplay}</td>
+      <td style="text-align:center">
+        <button class="btn btn-sm" onclick="editEmp(${i})">&#9999;&#65039;</button>
+        <button class="btn btn-sm btn-danger" onclick="delEmp(${i})">&#128465;</button>
+      </td>
+    </tr>`;
+  }).join('');
 }
 window.openAddEmp = function(){showModal(`<h3 style="margin-bottom:1rem;font-size:1rem">Add employee</h3>
-  <input type="text" id="f-name" placeholder="Full name" style="width:100%;margin-bottom:1rem">
+  <input type="text" id="f-name" placeholder="Full name" style="width:100%;margin-bottom:.5rem">
+  <input type="email" id="f-email" placeholder="Email address" style="width:100%;margin-bottom:1rem;padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:.85rem;font-family:inherit">
   <div style="display:flex;gap:8px;justify-content:flex-end"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="saveEmp()">Add</button></div>`);};
-window.editEmp = function(i){showModal(`<h3 style="margin-bottom:1rem;font-size:1rem">Edit name</h3>
-  <input type="text" id="f-name" value="${state.employees[i]}" style="width:100%;margin-bottom:1rem">
-  <div style="display:flex;gap:8px;justify-content:flex-end"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="saveEmp(${i})">Save</button></div>`);};
-window.saveEmp = function(i){const n=document.getElementById('f-name').value.trim();if(!n)return;if(i!==undefined)state.employees[i]=n;else state.employees.push(n);saveToFirebase();closeModal();renderNames();};
-window.delEmp = function(i){if(!confirm(`Remove "${state.employees[i]}"?`))return;state.employees.splice(i,1);saveToFirebase();renderNames();};
+window.editEmp = function(i){
+  const emp = state.employees[i];
+  const name = empName(emp);
+  const email = empEmail(emp);
+  showModal(`<h3 style="margin-bottom:1rem;font-size:1rem">Edit employee</h3>
+  <label style="font-size:.75rem;color:var(--muted);display:block;margin-bottom:2px">Name</label>
+  <input type="text" id="f-name" value="${name.replace(/"/g,'&quot;')}" style="width:100%;margin-bottom:.75rem">
+  <label style="font-size:.75rem;color:var(--muted);display:block;margin-bottom:2px">Email</label>
+  <input type="email" id="f-email" value="${email.replace(/"/g,'&quot;')}" placeholder="name@example.com" style="width:100%;margin-bottom:1rem;padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:.85rem;font-family:inherit">
+  <div style="display:flex;gap:8px;justify-content:flex-end"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="saveEmp(${i})">Save</button></div>`);
+};
+window.saveEmp = function(i){
+  const name = document.getElementById('f-name').value.trim();
+  const email = document.getElementById('f-email').value.trim();
+  if(!name) return;
+  if(i !== undefined){
+    state.employees[i] = {name, email};
+  } else {
+    state.employees.push({name, email});
+  }
+  saveToFirebase();
+  closeModal();
+  renderNames();
+};
+window.delEmp = function(i){
+  const name = empName(state.employees[i]);
+  if(!confirm(`Remove "${name}"?`)) return;
+  state.employees.splice(i, 1);
+  saveToFirebase();
+  renderNames();
+};
 
 // ── Schedule ─────────────────────────────────────────────────────────────────
 function renderSchedule(){
@@ -440,13 +568,17 @@ function renderSchedule(){
   hdr1+='</tr>';
   let tbody='';
   for(let ei=0;ei<N;ei++){
-    tbody+=`<tr><td class="name-cell">${state.employees[ei]}</td>`;
+    tbody+=`<tr><td class="name-cell">${empName(state.employees[ei])}</td>`;
     weeks.forEach((wk,wi)=>{
       let wkN=0;
       wk.forEach(d=>{
         const a=getAssign(d,ei);const s=LOC_STYLE[a]||LOC_STYLE["Day Off"];
         if(a!=='Day Off')wkN++;
-        tbody+=`<td style="padding:2px;background:${s.bg}"><select class="cell-sel" style="background:${s.bg};color:${s.fg}" onchange="onCell(this,'${d}',${ei})">
+        const note = getNote(d, ei);
+        const noteIcon = note
+          ? `<span onclick="editNote('${d}',${ei})" title="${note.replace(/"/g,'&quot;')}" style="position:absolute;bottom:1px;left:2px;right:2px;font-size:.62rem;cursor:pointer;background:#F0B429;color:#5A3800;border-radius:3px;padding:1px 4px;font-weight:600;line-height:1.15;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">📌 ${note.slice(0,12)}${note.length>12?'…':''}</span>`
+          : `<span onclick="editNote('${d}',${ei})" title="Click to add note" style="position:absolute;bottom:1px;left:2px;font-size:.62rem;cursor:pointer;color:${s.fg};opacity:.5;padding:0 3px;background:rgba(255,255,255,.6);border-radius:3px;font-weight:600">+ note</span>`;
+        tbody+=`<td style="padding:2px 2px 14px 2px;background:${s.bg};position:relative;min-width:75px">${noteIcon}<select class="cell-sel" style="background:${s.bg};color:${s.fg}" onchange="onCell(this,'${d}',${ei})">
           ${LOCS.map(l=>`<option value="${l}"${a===l?' selected':''}>${l}</option>`).join('')}</select></td>`;
       });
       const over=wkN>6;
@@ -455,6 +587,7 @@ function renderSchedule(){
     tbody+='</tr>';
   }
   document.getElementById('sched-wrap').innerHTML=`<table><thead>${hdr1}</thead><tbody>${tbody}</tbody></table>`;
+  populateBulkPanel();
 }
 window.onCell = function(sel,date,ei){
   const val=sel.value;
@@ -465,7 +598,7 @@ window.onCell = function(sel,date,ei){
   sel.style.background=s.bg;sel.style.color=s.fg;sel.parentElement.style.background=s.bg;
   const wk=weeks.find(w=>w.includes(date))||[];
   const c=getWeekDays(ei,wk);
-  if(c>6)toast(`&#9888; ${state.employees[ei]}: ${c} days this week — over limit!`,true);
+  if(c>6)toast(`&#9888; ${empName(state.employees[ei])}: ${c} days this week — over limit!`,true);
   renderSchedule();
 };
 
@@ -521,7 +654,7 @@ function renderSummary(){
     const cells=weeks.map(wk=>{const c=getWeekDays(ei,wk);tot+=c;const over=c>6;
       return `<td style="text-align:center;font-weight:700;background:${over?'var(--red-bg)':c>0?'var(--grn-bg)':'var(--off-bg)'};color:${over?'var(--red-fg)':c>0?'var(--grn-fg)':'var(--off-fg)'}">${c}${over?' &#9888;':''}</td>`;
     }).join('');
-    html+=`<tr><td class="name-cell" style="position:sticky;left:0">${state.employees[ei]}</td>${cells}<td style="text-align:center;font-weight:700">${tot}</td></tr>`;
+    html+=`<tr><td class="name-cell" style="position:sticky;left:0">${empName(state.employees[ei])}</td>${cells}<td style="text-align:center;font-weight:700">${tot}</td></tr>`;
   }
   html+='</tbody></table></div>';
   document.getElementById('summary-content').innerHTML=html;
@@ -533,6 +666,149 @@ window.closeModal = function(){document.getElementById('modal-root').innerHTML='
 let _tt;
 window.toast = function(msg,warn=false){const t=document.getElementById('toast');t.innerHTML=msg;t.className='toast show'+(warn?' warn':'');clearTimeout(_tt);_tt=setTimeout(()=>t.className='toast',4000);};
 
+
+window.editNote = function(date, ei){
+  const currentNote = getNote(date, ei);
+  const empN = empName(state.employees[ei]);
+  const dateLabel = new Date(date+'T00:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+  showModal(`<h3 style="margin-bottom:.5rem;font-size:1rem">Note for ${empN}</h3>
+    <p style="font-size:.8rem;color:var(--muted);margin-bottom:1rem">${dateLabel}</p>
+    <input type="text" id="f-note" value="${currentNote.replace(/"/g,'&quot;')}" placeholder="e.g. Robotics workshop 3-5pm" style="width:100%;margin-bottom:1rem;padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:.85rem;font-family:inherit" onkeydown="if(event.key==='Enter')saveNoteFromModal('${date}',${ei})">
+    <p style="font-size:.75rem;color:var(--muted);margin-bottom:.75rem">Leave empty to remove the note.</p>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveNoteFromModal('${date}',${ei})">Save note</button>
+    </div>`);
+  setTimeout(()=>document.getElementById('f-note')?.focus(), 50);
+};
+window.saveNoteFromModal = function(date, ei){
+  const val = document.getElementById('f-note').value;
+  setNote(date, ei, val);
+  closeModal();
+  renderSchedule();
+};
+
+window.notifyStaff = async function(){
+  // 1. Check EmailJS is configured
+  if(EMAILJS_CONFIG.publicKey === 'YOUR_PUBLIC_KEY_HERE'){
+    alert('EmailJS is not configured yet.\n\nTo enable email notifications:\n1. Sign up free at emailjs.com\n2. Create an Email Service and Template\n3. Edit admin.html and fill in EMAILJS_CONFIG at the top of the <script> block\n4. Update your GitHub-Pages URL in scheduleUrl too');
+    return;
+  }
+  if(typeof emailjs === 'undefined'){
+    alert('EmailJS SDK failed to load. Check your internet connection and refresh.');
+    return;
+  }
+
+  // 2. Confirm employees have emails
+  normalizeEmployees();
+  const withEmail = state.employees.filter(e => empEmail(e));
+  const missing = state.employees.filter(e => !empEmail(e));
+  if(withEmail.length === 0){
+    alert('No employees have email addresses set. Add emails in the Names tab first.');
+    return;
+  }
+
+  // 3. Confirm send
+  let msg = `Send notification email to ${withEmail.length} employee(s)?`;
+  if(missing.length > 0){
+    msg += `\n\nSkipping ${missing.length} employee(s) with no email set:\n${missing.map(e => '• '+empName(e)).join('\n')}`;
+  }
+  if(!confirm(msg)) return;
+
+  // 4. Send one email per employee
+  const p = curPeriod('period-sel');
+  const monthLabel = p?.label || 'the schedule';
+  const scheduleUrl = EMAILJS_CONFIG.scheduleUrl;
+  let sent = 0, failed = 0;
+  const failedNames = [];
+  toast(`Sending ${withEmail.length} email(s)...`);
+
+  for(const emp of withEmail){
+    try {
+      await emailjs.send(
+        EMAILJS_CONFIG.serviceId,
+        EMAILJS_CONFIG.templateId,
+        {
+          to_name:       empName(emp),
+          to_email:      empEmail(emp),
+          month_label:   monthLabel,
+          schedule_link: scheduleUrl,
+          admin_message: 'The staff rotation schedule has been updated. Please review your assignments.'
+        }
+      );
+      sent++;
+    } catch(err){
+      failed++;
+      failedNames.push(empName(emp));
+      console.error('Email failed for', empName(emp), err);
+    }
+  }
+  if(failed === 0){
+    toast(`&#10003; Sent ${sent} email(s) successfully.`);
+  } else {
+    toast(`&#9888; Sent ${sent}, failed ${failed}: ${failedNames.join(', ')}`, true);
+  }
+};
+
+window.bulkApply = function(){
+  const empSel = document.getElementById('bulk-emp');
+  const locSel = document.getElementById('bulk-loc');
+  const fromInp = document.getElementById('bulk-from');
+  const toInp = document.getElementById('bulk-to');
+  const status = document.getElementById('bulk-status');
+  const empIdx = empSel.value; // '' = all
+  const loc = locSel.value;
+  const fromDate = fromInp.value;
+  const toDate = toInp.value;
+  if(!loc || !fromDate || !toDate){
+    status.textContent = 'Please pick location and both dates';
+    status.style.color = '#DC2626';
+    return;
+  }
+  if(fromDate > toDate){
+    status.textContent = 'From date is after To date';
+    status.style.color = '#DC2626';
+    return;
+  }
+  // Collect skip-days (0=Sun, 1=Mon, ..., 6=Sat)
+  const skipDays = Array.from(document.querySelectorAll('.bulk-skip:checked')).map(el => parseInt(el.value));
+  const dates = dateRange(fromDate, toDate);
+  const targets = empIdx === '' ? state.employees.map((_,i)=>i) : [parseInt(empIdx)];
+  let count = 0, skipped = 0;
+  dates.forEach(d => {
+    const dow = parseDate(d).getDay();
+    if(skipDays.includes(dow)){ skipped += targets.length; return; }
+    targets.forEach(ei => {
+      state.schedule[`${d}:${ei}`] = loc;
+      count++;
+    });
+  });
+  saveToFirebase();
+  const skipMsg = skipped > 0 ? ` (skipped ${skipped})` : '';
+  status.textContent = `✓ Applied to ${count} cell(s)${skipMsg}`;
+  status.style.color = '#16A34A';
+  renderSchedule();
+  setTimeout(()=>{ status.textContent = ''; }, 4000);
+};
+
+function populateBulkPanel(){
+  const empSel = document.getElementById('bulk-emp');
+  const locSel = document.getElementById('bulk-loc');
+  if(!empSel || !locSel) return;
+  const curEmp = empSel.value;
+  const curLoc = locSel.value;
+  empSel.innerHTML = '<option value="">-- All employees --</option>' +
+    state.employees.map((e,i)=>`<option value="${i}">${empName(e)}</option>`).join('');
+  locSel.innerHTML = LOCS.map(l => `<option value="${l}">${l}</option>`).join('');
+  if(curEmp) empSel.value = curEmp;
+  if(curLoc) locSel.value = curLoc;
+  // Default date range = current period
+  const p = curPeriod('period-sel');
+  const fromInp = document.getElementById('bulk-from');
+  const toInp = document.getElementById('bulk-to');
+  if(fromInp && !fromInp.value) fromInp.value = p.start;
+  if(toInp && !toInp.value) toInp.value = p.end;
+}
 
 // Expose render functions globally so inline onchange handlers can call them
 window.renderSchedule = renderSchedule;
